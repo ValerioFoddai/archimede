@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '../../lib/auth';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -22,9 +23,9 @@ import { AuthDivider } from './auth-divider';
 import { SocialButton } from './social-button';
 
 export function LoginForm() {
+  const { signIn, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -39,36 +40,43 @@ export function LoginForm() {
     try {
       setIsLoading(true);
       setError(null);
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      navigate('/dashboard');
+      await signIn(data.email, data.password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to login');
+      console.error('Login error:', err);
+      if (err instanceof Error) {
+        // Handle specific error cases
+        if (err.message.includes('Invalid login credentials')) {
+          setError('Invalid email or password');
+        } else if (err.message.includes('rate limit')) {
+          setError('Too many login attempts. Please try again later.');
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError('Failed to login. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
   }
 
-  async function signInWithGoogle() {
+  async function handleGoogleSignIn() {
     try {
       setError(null);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (error) throw error;
+      await signInWithGoogle();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
+      console.error('Google sign-in error:', err);
+      if (err instanceof Error) {
+        if (err.message.includes('popup_closed_by_user')) {
+          setError('Sign in cancelled. Please try again.');
+        } else if (err.message.includes('rate limit')) {
+          setError('Too many attempts. Please try again later.');
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError('Failed to sign in with Google. Please try again.');
+      }
     }
   }
 
@@ -83,7 +91,7 @@ export function LoginForm() {
         </div>
 
         <SocialButton
-          onClick={signInWithGoogle}
+          onClick={handleGoogleSignIn}
           icon={<img src="/google.svg" alt="Google" className="w-5 h-5" />}
         >
           Sign in with Google
