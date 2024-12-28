@@ -1,31 +1,18 @@
 import { useState } from 'react';
-import { CategoryHeader } from '@/components/expense-categories/category-header';
-import { CategoryTable } from '@/components/expense-categories/category-table';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
-import type { MainCategory } from '@/types/expense-categories';
+import { CategoryHeader } from '../../components/expense-categories/category-header';
+import { CategoryAccordion } from '../../components/expense-categories/category-accordion';
+import { useExpenseCategories } from '../../hooks/useExpenseCategories';
 
 export function ExpenseCategoriesPage() {
   const { categories, loading, error } = useExpenseCategories();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredCategories = categories.filter(category =>
-    category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    category.sub_categories.some(sub => 
+      sub.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
   );
-
-  const handleAddCategory = () => {
-    // TODO: Implement add category functionality
-    console.log('Add category clicked');
-  };
-
-  const handleEditCategory = (category: MainCategory) => {
-    // TODO: Implement edit category functionality
-    console.log('Edit category:', category);
-  };
-
-  const handleDeleteCategory = (category: MainCategory) => {
-    // TODO: Implement delete category functionality
-    console.log('Delete category:', category);
-  };
 
   if (loading) {
     return (
@@ -45,15 +32,8 @@ export function ExpenseCategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <CategoryHeader
-        onAddCategory={handleAddCategory}
-        onSearch={setSearchQuery}
-      />
-      <CategoryTable
-        categories={filteredCategories}
-        onEdit={handleEditCategory}
-        onDelete={handleDeleteCategory}
-      />
+      <CategoryHeader onSearch={setSearchQuery} />
+      <CategoryAccordion categories={filteredCategories} />
     </div>
   );
 }
