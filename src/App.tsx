@@ -4,6 +4,9 @@ import { SignUpForm } from '@/components/auth/signup-form';
 import { LoginForm } from '@/components/auth/login-form';
 import { ForgotPasswordForm } from '@/components/auth/forgot-password-form';
 import { DashboardPage } from '@/pages/dashboard';
+import { SettingsLayout } from '@/pages/settings/layout';
+import { SettingsPage } from '@/pages/settings';
+import { ExpenseCategoriesPage } from '@/pages/settings/expense-categories';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -27,14 +30,13 @@ function AppRoutes() {
       <Route path="/" element={user ? <Navigate to="/dashboard" /> : <SignUpForm />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginForm />} />
       <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" /> : <ForgotPasswordForm />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
+      
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      
+      <Route path="/settings" element={<ProtectedRoute><SettingsLayout /></ProtectedRoute>}>
+        <Route index element={<SettingsPage />} />
+        <Route path="expense-categories" element={<ExpenseCategoriesPage />} />
+      </Route>
     </Routes>
   );
 }
