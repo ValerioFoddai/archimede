@@ -1,12 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from '@/lib/auth';
-import { SignUpForm } from '@/components/auth/signup-form';
-import { LoginForm } from '@/components/auth/login-form';
-import { ForgotPasswordForm } from '@/components/auth/forgot-password-form';
-import { DashboardPage } from '@/pages/dashboard';
-import { SettingsLayout } from '@/pages/settings/layout';
-import { SettingsPage } from '@/pages/settings';
-import { ExpenseCategoriesPage } from '@/pages/settings/expense-categories';
+import { AuthProvider, useAuth } from './lib/auth';
+import { SignUpForm } from './components/auth/signup-form';
+import { LoginForm } from './components/auth/login-form';
+import { ForgotPasswordForm } from './components/auth/forgot-password-form';
+import { DashboardPage } from './pages/dashboard';
+import { SettingsLayout } from './pages/settings/layout';
+import { SettingsPage } from './pages/settings';
+import { ExpenseCategoriesPage } from './pages/settings/expense-categories';
+import { BankTemplatesPage } from './pages/settings/bank-templates';
+import TagsPage from './pages/settings/tags';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -36,6 +38,8 @@ function AppRoutes() {
       <Route path="/settings" element={<ProtectedRoute><SettingsLayout /></ProtectedRoute>}>
         <Route index element={<SettingsPage />} />
         <Route path="expense-categories" element={<ExpenseCategoriesPage />} />
+        <Route path="bank-templates" element={<BankTemplatesPage />} />
+        <Route path="tags" element={<TagsPage />} />
       </Route>
     </Routes>
   );

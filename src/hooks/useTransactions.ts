@@ -12,7 +12,13 @@ export function useTransactions() {
       try {
         const { data, error } = await supabase
           .from('transactions')
-          .select('*')
+          .select(`
+            *,
+            category:expense_categories(
+              id,
+              name
+            )
+          `)
           .order('date', { ascending: false });
 
         if (error) throw error;

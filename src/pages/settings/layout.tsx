@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { DashboardLayout } from '../../components/layout/dashboard-layout';
 import { SettingsSidebar } from './components/settings-sidebar';
 
 export function SettingsLayout() {

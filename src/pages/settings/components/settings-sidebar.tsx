@@ -1,17 +1,27 @@
-import { NavLink } from 'react-router-dom';
-import { CreditCard, Settings } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { NavLink } from "react-router-dom";
+import { CreditCard, Settings, Building2, Tag } from "lucide-react";
+import { cn } from "../../../lib/utils";
 
 const navigation = [
   {
-    name: 'General',
-    href: '/settings',
+    name: "General",
+    href: "/settings",
     icon: Settings,
   },
   {
-    name: 'Expense Categories',
-    href: '/settings/expense-categories',
+    name: "Expense Categories",
+    href: "/settings/expense-categories",
     icon: CreditCard,
+  },
+  {
+    name: "Bank Templates",
+    href: "/settings/bank-templates",
+    icon: Building2,
+  },
+  {
+    name: "Tags",
+    href: "/settings/tags",
+    icon: Tag,
   },
 ];
 
@@ -26,10 +36,10 @@ export function SettingsSidebar() {
             end
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent'
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent"
               )
             }
           >

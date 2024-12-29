@@ -7,4 +7,15 @@ export interface Transaction {
   notes?: string;
   created_at: string;
   user_id: string;
+  category?: {
+    id: number;
+    name: string;
+  };
+}
+
+export interface TransactionFilters {
+  startDate?: Date;
+  endDate?: Date;
+  categoryId?: number;
+  searchTerm?: string;
 }
