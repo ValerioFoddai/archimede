@@ -14,8 +14,8 @@ const navigation = [
     icon: CreditCard,
   },
   {
-    name: "Tags",
-    href: "/settings/tags",
+    name: "User Tags",
+    href: "/settings/user-tags",
     icon: Tag,
   },
 ];

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -6,18 +5,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Tag } from "@/types/tags";
+} from "../ui/table";
+import { Button } from "../ui/button";
+import { UserTag } from "../../types/user-tags";
 
-interface TagListProps {
-  tags: Tag[];
+interface UserTagListProps {
+  tags: UserTag[];
   loading: boolean;
-  onEdit: (tag: Tag) => void;
-  onDelete: (tag: Tag) => void;
+  onEdit: (tag: UserTag) => void;
+  onDelete: (tag: UserTag) => void;
 }
 
-export function TagList({ tags, loading, onEdit, onDelete }: TagListProps) {
+export function UserTagList({ tags, loading, onEdit, onDelete }: UserTagListProps) {
   if (loading) {
     return (
       <div className="text-center py-4 text-muted-foreground">Loading...</div>
