@@ -8,6 +8,7 @@ import { SettingsLayout } from './pages/settings/layout';
 import { SettingsPage } from './pages/settings';
 import { ExpenseCategoriesPage } from './pages/settings/expense-categories';
 import { TagsPage } from './pages/settings/tags';
+import { Toaster } from './components/ui/toaster';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -48,6 +49,7 @@ function App() {
     <Router>
       <AuthProvider>
         <AppRoutes />
+        <Toaster />
       </AuthProvider>
     </Router>
   );
