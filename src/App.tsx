@@ -7,8 +7,7 @@ import { DashboardPage } from './pages/dashboard';
 import { SettingsLayout } from './pages/settings/layout';
 import { SettingsPage } from './pages/settings';
 import { ExpenseCategoriesPage } from './pages/settings/expense-categories';
-import TagsPage from './pages/settings/tags';
-
+import UserTagsPage from './pages/settings/user-tags';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -37,7 +36,7 @@ function AppRoutes() {
       <Route path="/settings" element={<ProtectedRoute><SettingsLayout /></ProtectedRoute>}>
         <Route index element={<SettingsPage />} />
         <Route path="expense-categories" element={<ExpenseCategoriesPage />} />
-        <Route path="tags" element={<TagsPage />} />
+        <Route path="user-tags" element={<UserTagsPage />} />
       </Route>
     </Routes>
   );

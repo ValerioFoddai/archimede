@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/lib/auth";
-import { useToast } from "@/hooks/useToast";
-import { Tag, CreateTagInput, UpdateTagInput } from "@/types/tags";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../lib/auth";
+import { useToast } from "./useToast";
+import { UserTag, CreateUserTagInput, UpdateUserTagInput } from "../types/user-tags";
 import { PostgrestError } from "@supabase/supabase-js";
 
-export function useTags() {
-  const [tags, setTags] = useState<Tag[]>([]);
+export function useUserTags() {
+  const [tags, setTags] = useState<UserTag[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -17,7 +17,7 @@ export function useTags() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from("tags")
+        .from("user_tags")
         .select("*")
         .eq("user_id", user.id)
         .order("name");
@@ -42,7 +42,7 @@ export function useTags() {
     }
   }, [user, toast]);
 
-  const createTag = async (input: CreateTagInput) => {
+  const createTag = async (input: CreateUserTagInput) => {
     if (!user) {
       toast({
         title: "Error",
@@ -54,7 +54,7 @@ export function useTags() {
 
     try {
       const { data, error } = await supabase
-        .from("tags")
+        .from("user_tags")
         .insert([{ ...input, user_id: user.id }])
         .select()
         .single();
@@ -84,10 +84,10 @@ export function useTags() {
     }
   };
 
-  const updateTag = async (input: UpdateTagInput) => {
+  const updateTag = async (input: UpdateUserTagInput) => {
     try {
       const { data, error } = await supabase
-        .from("tags")
+        .from("user_tags")
         .update({ name: input.name, description: input.description })
         .eq("id", input.id)
         .select()
@@ -121,7 +121,7 @@ export function useTags() {
   const deleteTag = async (id: string) => {
     try {
       const { error } = await supabase
-        .from("tags")
+        .from("user_tags")
         .delete()
         .eq("id", id);
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
+import { Button } from "../../components/ui/button";
+import { Dialog } from "../../components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,25 +11,25 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { TagList } from "@/components/tags/tag-list";
-import { TagDialog } from "@/components/tags/tag-dialog";
-import { useTags } from "@/hooks/useTags";
-import type { Tag } from "@/types/tags";
+} from "../../components/ui/alert-dialog";
+import { UserTagList } from "../../components/user-tags/user-tag-list";
+import { UserTagDialog } from "../../components/user-tags/user-tag-dialog";
+import { useUserTags } from "../../hooks/useUserTags";
+import type { UserTag } from "../../types/user-tags";
 
-export default function TagsPage() {
-  const { tags, loading, deleteTag } = useTags();
-  const [selectedTag, setSelectedTag] = useState<Tag | undefined>();
+export default function UserTagsPage() {
+  const { tags, loading, deleteTag } = useUserTags();
+  const [selectedTag, setSelectedTag] = useState<UserTag | undefined>();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
+  const [tagToDelete, setTagToDelete] = useState<UserTag | null>(null);
 
-  const handleEdit = (tag: Tag) => {
+  const handleEdit = (tag: UserTag) => {
     setSelectedTag(tag);
     setDialogOpen(true);
   };
 
-  const handleDelete = (tag: Tag) => {
+  const handleDelete = (tag: UserTag) => {
     setTagToDelete(tag);
     setDeleteDialogOpen(true);
   };
@@ -46,9 +46,9 @@ export default function TagsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Tags</h2>
+          <h2 className="text-2xl font-bold tracking-tight">User Tags</h2>
           <p className="text-muted-foreground">
-            Manage your transaction tags
+            Manage your tags
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
@@ -57,7 +57,7 @@ export default function TagsPage() {
         </Button>
       </div>
 
-      <TagList
+      <UserTagList
         tags={tags}
         loading={loading}
         onEdit={handleEdit}
@@ -65,7 +65,7 @@ export default function TagsPage() {
       />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <TagDialog
+        <UserTagDialog
           tag={selectedTag}
           onClose={() => {
             setDialogOpen(false);
