@@ -1,209 +1,98 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../../lib/auth";
-import { Button } from "../../components/ui/button";
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../../components/ui/dialog";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { Tag } from "../../types/tags";
-import { useTags } from "../../hooks/useTags";
-import { useToast } from "../../hooks/useToast";
-
-function TagDialog({
-  tag,
-  onClose,
-}: {
-  tag?: Tag;
-  onClose: () => void;
-}) {
-  const { createTag, updateTag } = useTags();
-  const [name, setName] = useState(tag?.name ?? "");
-  const [description, setDescription] = useState(tag?.description ?? "");
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      toast({
-        title: "Error",
-        description: "Name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const input = { name, description };
-      const result = tag
-        ? await updateTag({ ...input, id: tag.id })
-        : await createTag(input);
-
-      if (result) {
-        onClose();
-      }
-    } catch (error) {
-      console.error('Error submitting tag:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save tag",
-        variant: "destructive",
-      });
-    }
-  };
-
-  return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>{tag ? "Edit Tag" : "Create Tag"}</DialogTitle>
-      </DialogHeader>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter tag name"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Input
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Enter tag description"
-          />
-        </div>
-        <div className="flex justify-end space-x-2">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit">{tag ? "Update" : "Create"}</Button>
-        </div>
-      </form>
-    </DialogContent>
-  );
-}
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { TagList } from "@/components/tags/tag-list";
+import { TagDialog } from "@/components/tags/tag-dialog";
+import { useTags } from "@/hooks/useTags";
+import type { Tag } from "@/types/tags";
 
 export default function TagsPage() {
-  const { tags, loading, fetchTags, deleteTag } = useTags();
-  const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { tags, loading, deleteTag } = useTags();
   const [selectedTag, setSelectedTag] = useState<Tag | undefined>();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
 
-  useEffect(() => {
-    console.log("Current user:", user?.id);
-    console.log("Current tags:", tags);
-    console.log("Loading state:", loading);
-    
-    if (user) {
-      console.log("Fetching tags for user:", user.id);
-      fetchTags();
-    }
-  }, [user?.id, fetchTags]); // Combine both effects into one
+  const handleEdit = (tag: Tag) => {
+    setSelectedTag(tag);
+    setDialogOpen(true);
+  };
 
-  const filteredTags = tags.filter(
-    (tag) =>
-      tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tag.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleDelete = (tag: Tag) => {
+    setTagToDelete(tag);
+    setDeleteDialogOpen(true);
+  };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this tag?")) {
-      await deleteTag(id);
+  const confirmDelete = async () => {
+    if (tagToDelete) {
+      await deleteTag(tagToDelete.id);
+      setDeleteDialogOpen(false);
+      setTagToDelete(null);
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <Input
-          placeholder="Search tags..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-sm"
-        />
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>Create Tag</Button>
-          </DialogTrigger>
-          <TagDialog
-            tag={selectedTag}
-            onClose={() => {
-              setDialogOpen(false);
-              setSelectedTag(undefined);
-            }}
-          />
-        </Dialog>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Tags</h2>
+          <p className="text-muted-foreground">
+            Manage your transaction tags
+          </p>
+        </div>
+        <Button onClick={() => setDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Tag
+        </Button>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            <TableRow>
-              <TableCell colSpan={3} className="text-center">
-                Loading...
-              </TableCell>
-            </TableRow>
-          ) : filteredTags.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={3} className="text-center">
-                No tags found
-              </TableCell>
-            </TableRow>
-          ) : (
-            filteredTags.map((tag) => (
-              <TableRow key={tag.id}>
-                <TableCell>{tag.name}</TableCell>
-                <TableCell>{tag.description}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedTag(tag);
-                        setDialogOpen(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(tag.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+      <TagList
+        tags={tags}
+        loading={loading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <TagDialog
+          tag={selectedTag}
+          onClose={() => {
+            setDialogOpen(false);
+            setSelectedTag(undefined);
+          }}
+        />
+      </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the tag
+              "{tagToDelete?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

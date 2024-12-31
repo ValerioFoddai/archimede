@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { BankTemplateWithMappings } from '../../../../types/bank-templates';
 import { Button } from '../../../../components/ui/button';
 import {
   Table,
@@ -10,9 +9,14 @@ import {
   TableRow,
 } from '../../../../components/ui/table';
 
+interface ColumnMapping {
+  source_column: string;
+  target_column: string;
+}
+
 interface ColumnMapperProps {
   file: File;
-  template: BankTemplateWithMappings;
+  mappings: ColumnMapping[];
   onConfirm: () => void;
 }
 
@@ -21,7 +25,7 @@ interface PreviewData {
   rows: string[][];
 }
 
-export function ColumnMapper({ file, template, onConfirm }: ColumnMapperProps) {
+export function ColumnMapper({ file, mappings, onConfirm }: ColumnMapperProps) {
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,10 +87,10 @@ export function ColumnMapper({ file, template, onConfirm }: ColumnMapperProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {template.column_mappings.map((mapping) => {
+              {mappings.map((mapping, index) => {
                 const sourceExists = preview.headers.includes(mapping.source_column);
                 return (
-                  <TableRow key={mapping.id}>
+                  <TableRow key={index}>
                     <TableCell>
                       <span className={!sourceExists ? 'text-destructive' : ''}>
                         {mapping.source_column}
@@ -129,7 +133,7 @@ export function ColumnMapper({ file, template, onConfirm }: ColumnMapperProps) {
       <div className="flex justify-end">
         <Button
           onClick={onConfirm}
-          disabled={template.column_mappings.some(
+          disabled={mappings.some(
             (mapping) => !preview.headers.includes(mapping.source_column)
           )}
         >

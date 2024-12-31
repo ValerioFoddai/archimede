@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { CreditCard, Settings, Building2, Tag } from "lucide-react";
+import { CreditCard, Settings, Tag } from "lucide-react";
 import { cn } from "../../../lib/utils";
 
 const navigation = [
@@ -12,11 +12,6 @@ const navigation = [
     name: "Expense Categories",
     href: "/settings/expense-categories",
     icon: CreditCard,
-  },
-  {
-    name: "Bank Templates",
-    href: "/settings/bank-templates",
-    icon: Building2,
   },
   {
     name: "Tags",

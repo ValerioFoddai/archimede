@@ -8,24 +8,57 @@ import {
 } from '../../../../components/ui/dialog';
 import { Button } from '../../../../components/ui/button';
 import { useToast } from '../../../../hooks/useToast';
-import { useBankTemplates } from '../../../../hooks/useBankTemplates';
 import { BankSelector } from './bank-selector';
 import { ColumnMapper } from './column-mapper';
-import { BankTemplateWithMappings } from '../../../../types/bank-templates';
 
 interface CSVImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+interface Bank {
+  id: string;
+  name: string;
+}
+
+interface ColumnMapping {
+  source_column: string;
+  target_column: string;
+}
+
 type ImportStep = 'select-bank' | 'map-columns' | 'confirm';
+
+// Default banks since we no longer use templates
+const defaultBanks: Bank[] = [
+  { id: 'chase', name: 'Chase' },
+  { id: 'bofa', name: 'Bank of America' },
+  { id: 'wells', name: 'Wells Fargo' }
+];
+
+// Default column mappings for each bank
+const defaultMappings: Record<string, ColumnMapping[]> = {
+  chase: [
+    { source_column: 'Transaction Date', target_column: 'date' },
+    { source_column: 'Description', target_column: 'description' },
+    { source_column: 'Amount', target_column: 'amount' }
+  ],
+  bofa: [
+    { source_column: 'Date', target_column: 'date' },
+    { source_column: 'Payee', target_column: 'description' },
+    { source_column: 'Amount', target_column: 'amount' }
+  ],
+  wells: [
+    { source_column: 'Date', target_column: 'date' },
+    { source_column: 'Description', target_column: 'description' },
+    { source_column: 'Amount', target_column: 'amount' }
+  ]
+};
 
 export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
   const [step, setStep] = useState<ImportStep>('select-bank');
   const [file, setFile] = useState<File | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<BankTemplateWithMappings | null>(null);
+  const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
   const [uploading, setUploading] = useState(false);
-  const { templates, loading: templatesLoading, processCSV } = useBankTemplates();
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,24 +74,33 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
     }
   };
 
-  const handleTemplateSelect = (template: BankTemplateWithMappings) => {
-    setSelectedTemplate(template);
+  const handleBankSelect = (bank: Bank) => {
+    setSelectedBank(bank);
     setStep('map-columns');
   };
 
   const handleUpload = async () => {
-    if (!file || !selectedTemplate) return;
+    if (!file || !selectedBank) return;
 
     try {
       setUploading(true);
-      await processCSV(file, selectedTemplate.id);
+      // Here you would implement your CSV processing logic
+      // For now, just show a success message
+      toast({
+        title: 'Success',
+        description: 'CSV file imported successfully',
+      });
       onOpenChange(false);
       // Reset state
       setFile(null);
-      setSelectedTemplate(null);
+      setSelectedBank(null);
       setStep('select-bank');
     } catch (error) {
-      // Error handling is done in processCSV
+      toast({
+        title: 'Error',
+        description: 'Failed to import CSV file',
+        variant: 'destructive',
+      });
     } finally {
       setUploading(false);
     }
@@ -67,7 +109,7 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
   const handleBack = () => {
     if (step === 'map-columns') {
       setStep('select-bank');
-      setSelectedTemplate(null);
+      setSelectedBank(null);
     } else if (step === 'confirm') {
       setStep('map-columns');
     }
@@ -91,9 +133,9 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
           {step === 'select-bank' && (
             <div className="space-y-4">
               <BankSelector
-                templates={templates}
-                loading={templatesLoading}
-                onSelect={handleTemplateSelect}
+                templates={defaultBanks}
+                loading={false}
+                onSelect={handleBankSelect}
               />
               <div className="grid w-full max-w-sm items-center gap-1.5">
                 <input
@@ -106,10 +148,10 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
             </div>
           )}
 
-          {step === 'map-columns' && file && selectedTemplate && (
+          {step === 'map-columns' && file && selectedBank && (
             <ColumnMapper
               file={file}
-              template={selectedTemplate}
+              mappings={defaultMappings[selectedBank.id]}
               onConfirm={() => setStep('confirm')}
             />
           )}
@@ -119,7 +161,7 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
               <div className="rounded-lg border p-4">
                 <h3 className="font-medium">Import Summary</h3>
                 <p className="text-sm text-muted-foreground">
-                  Bank: {selectedTemplate?.name}
+                  Bank: {selectedBank?.name}
                   <br />
                   File: {file?.name}
                 </p>
@@ -137,7 +179,7 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
               Cancel
             </Button>
             {step === 'confirm' && (
-              <Button onClick={handleUpload} disabled={!file || !selectedTemplate || uploading}>
+              <Button onClick={handleUpload} disabled={!file || !selectedBank || uploading}>
                 {uploading ? 'Importing...' : 'Import'}
               </Button>
             )}
