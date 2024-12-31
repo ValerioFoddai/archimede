@@ -1,30 +1,20 @@
-import { useCallback, useState } from "react";
-import { supabase } from "../lib/supabase";
-import { CreateTagInput, Tag, UpdateTagInput } from "../types/tags";
-import { useToast } from "./useToast";
-import { useAuth } from "../lib/auth";
+import { useState, useCallback, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/useToast";
+import { Tag, CreateTagInput, UpdateTagInput } from "@/types/tags";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export function useTags() {
   const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const fetchTags = useCallback(async () => {
-    if (!user) {
-      console.log("No user found");
-      toast({
-        title: "Error",
-        description: "You must be logged in to view tags",
-        variant: "destructive",
-      });
-      setTags([]);
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
 
     try {
-      console.log("Fetching tags for user:", user.id);
       setLoading(true);
       const { data, error } = await supabase
         .from("tags")
@@ -32,159 +22,144 @@ export function useTags() {
         .eq("user_id", user.id)
         .order("name");
 
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
-      }
-      
-      console.log("Fetched tags:", data);
+      if (error) throw error;
       setTags(data || []);
     } catch (error) {
-      console.error("Error fetching tags:", error);
-      if (error instanceof Error) {
-        console.error("Error details:", error.message);
-      }
+      const pgError = error as PostgrestError;
+      console.error("Error fetching tags:", {
+        message: pgError.message,
+        details: pgError.details,
+        hint: pgError.hint,
+        code: pgError.code
+      });
       toast({
         title: "Error",
-        description: "Failed to fetch tags",
+        description: `Failed to fetch tags: ${pgError.message}`,
         variant: "destructive",
       });
-      setTags([]);
     } finally {
       setLoading(false);
     }
-  }, [toast, user]);
+  }, [user, toast]);
 
-  const createTag = useCallback(
-    async (input: CreateTagInput) => {
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to create tags",
-          variant: "destructive",
-        });
-        return null;
-      }
+  const createTag = async (input: CreateTagInput) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create tags",
+        variant: "destructive",
+      });
+      return null;
+    }
 
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from("tags")
-          .insert([{ ...input, user_id: user.id }])
-          .select()
-          .single();
+    try {
+      const { data, error } = await supabase
+        .from("tags")
+        .insert([{ ...input, user_id: user.id }])
+        .select()
+        .single();
 
-        if (error) throw error;
+      if (error) throw error;
 
-        setTags(prev => [...prev, data]);
-        toast({
-          title: "Success",
-          description: "Tag created successfully",
-        });
-        return data;
-      } catch (error) {
-        console.error('Error creating tag:', error);
-        toast({
-          title: "Error",
-          description: "Failed to create tag",
-          variant: "destructive",
-        });
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [toast, user]
-  );
+      setTags(prev => [...prev, data]);
+      toast({
+        title: "Success",
+        description: "Tag created successfully",
+      });
+      return data;
+    } catch (error) {
+      const pgError = error as PostgrestError;
+      console.error("Error creating tag:", {
+        message: pgError.message,
+        details: pgError.details,
+        hint: pgError.hint,
+        code: pgError.code
+      });
+      toast({
+        title: "Error",
+        description: `Failed to create tag: ${pgError.message}`,
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
 
-  const updateTag = useCallback(
-    async (input: UpdateTagInput) => {
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to update tags",
-          variant: "destructive",
-        });
-        return null;
-      }
+  const updateTag = async (input: UpdateTagInput) => {
+    try {
+      const { data, error } = await supabase
+        .from("tags")
+        .update({ name: input.name, description: input.description })
+        .eq("id", input.id)
+        .select()
+        .single();
 
-      try {
-        setLoading(true);
-        const { id, ...rest } = input;
-        const { data, error } = await supabase
-          .from("tags")
-          .update(rest)
-          .eq("id", id)
-          .select()
-          .single();
+      if (error) throw error;
 
-        if (error) throw error;
+      setTags(prev => prev.map(tag => tag.id === input.id ? data : tag));
+      toast({
+        title: "Success",
+        description: "Tag updated successfully",
+      });
+      return data;
+    } catch (error) {
+      const pgError = error as PostgrestError;
+      console.error("Error updating tag:", {
+        message: pgError.message,
+        details: pgError.details,
+        hint: pgError.hint,
+        code: pgError.code
+      });
+      toast({
+        title: "Error",
+        description: `Failed to update tag: ${pgError.message}`,
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
 
-        setTags(prev => prev.map(tag => tag.id === id ? data : tag));
-        toast({
-          title: "Success",
-          description: "Tag updated successfully",
-        });
-        return data;
-      } catch (error) {
-        console.error('Error updating tag:', error);
-        toast({
-          title: "Error",
-          description: "Failed to update tag",
-          variant: "destructive",
-        });
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [toast, user]
-  );
+  const deleteTag = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("tags")
+        .delete()
+        .eq("id", id);
 
-  const deleteTag = useCallback(
-    async (id: string) => {
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to delete tags",
-          variant: "destructive",
-        });
-        return false;
-      }
+      if (error) throw error;
 
-      try {
-        setLoading(true);
-        const { error } = await supabase.from("tags").delete().eq("id", id);
+      setTags(prev => prev.filter(tag => tag.id !== id));
+      toast({
+        title: "Success",
+        description: "Tag deleted successfully",
+      });
+      return true;
+    } catch (error) {
+      const pgError = error as PostgrestError;
+      console.error("Error deleting tag:", {
+        message: pgError.message,
+        details: pgError.details,
+        hint: pgError.hint,
+        code: pgError.code
+      });
+      toast({
+        title: "Error",
+        description: `Failed to delete tag: ${pgError.message}`,
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
 
-        if (error) throw error;
-
-        setTags(prev => prev.filter(tag => tag.id !== id));
-        toast({
-          title: "Success",
-          description: "Tag deleted successfully",
-        });
-        return true;
-      } catch (error) {
-        console.error('Error deleting tag:', error);
-        toast({
-          title: "Error",
-          description: "Failed to delete tag",
-          variant: "destructive",
-        });
-        return false;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [toast, user]
-  );
+  useEffect(() => {
+    fetchTags();
+  }, [fetchTags]);
 
   return {
     tags,
     loading,
-    fetchTags,
     createTag,
     updateTag,
     deleteTag,
+    refresh: fetchTags,
   };
 }
