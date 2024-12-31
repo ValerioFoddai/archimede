@@ -10,30 +10,36 @@ import { AmountInput } from './amount-input';
 import { CategorySelect } from './category-select';
 import { TagSelect } from './tag-select';
 import { NotesInput } from './notes-input';
-import { transactionSchema, type TransactionFormData } from '@/types/transactions';
+import { transactionSchema, type TransactionFormData, type Transaction } from '@/types/transactions';
 
 interface TransactionFormProps {
+  transaction?: Transaction | null;
   onSubmit: (data: TransactionFormData) => Promise<void>;
   onCancel: () => void;
   isSubmitting?: boolean;
 }
 
-export function TransactionForm({ onSubmit, onCancel, isSubmitting }: TransactionFormProps) {
+export function TransactionForm({ transaction, onSubmit, onCancel, isSubmitting }: TransactionFormProps) {
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
-      date: new Date(),
-      merchant: '',
-      amount: '',
-      notes: '',
-      tagIds: [],
+      bankId: transaction?.bankId || '',
+      date: transaction?.date || new Date(),
+      merchant: transaction?.merchant || '',
+      amount: transaction?.amount ? transaction.amount.toString() : '',
+      mainCategoryId: transaction?.mainCategoryId,
+      subCategoryId: transaction?.subCategoryId,
+      tagIds: transaction?.tagIds || [],
+      notes: transaction?.notes || '',
     },
   });
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Add Transaction</DialogTitle>
+        <DialogTitle>
+          {transaction ? 'Edit Transaction' : 'Add Transaction'}
+        </DialogTitle>
       </DialogHeader>
 
       <Form {...form}>
@@ -63,7 +69,7 @@ export function TransactionForm({ onSubmit, onCancel, isSubmitting }: Transactio
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Transaction'}
+              {isSubmitting ? 'Saving...' : transaction ? 'Update Transaction' : 'Save Transaction'}
             </Button>
           </div>
         </form>

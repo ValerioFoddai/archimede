@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -8,6 +9,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { Transaction } from '@/types/transactions';
 import { useExpenseCategories } from '@/hooks/useExpenseCategories';
 import { useBanks } from '@/hooks/useBanks';
@@ -17,9 +25,11 @@ import { formatDisplayAmount } from '@/lib/format';
 interface TransactionListProps {
   transactions: Transaction[];
   loading: boolean;
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (transaction: Transaction) => void;
 }
 
-export function TransactionList({ transactions, loading }: TransactionListProps) {
+export function TransactionList({ transactions, loading, onEdit, onDelete }: TransactionListProps) {
   const { categories } = useExpenseCategories();
   const { banks } = useBanks();
   const { tags } = useTags();
@@ -52,6 +62,7 @@ export function TransactionList({ transactions, loading }: TransactionListProps)
             <TableHead>Category</TableHead>
             <TableHead>Tags</TableHead>
             <TableHead>Notes</TableHead>
+            <TableHead className="w-[50px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,7 +81,7 @@ export function TransactionList({ transactions, loading }: TransactionListProps)
             return (
               <TableRow key={transaction.id}>
                 <TableCell>
-                  {format(new Date(transaction.date), 'MMM d, yyyy')}
+                  {format(transaction.date, 'MMM d, yyyy')}
                 </TableCell>
                 <TableCell>{bank?.name}</TableCell>
                 <TableCell>{transaction.merchant}</TableCell>
@@ -100,6 +111,29 @@ export function TransactionList({ transactions, loading }: TransactionListProps)
                 </TableCell>
                 <TableCell className="max-w-[200px] truncate">
                   {transaction.notes}
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEdit(transaction)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => onDelete(transaction)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             );

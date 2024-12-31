@@ -32,7 +32,9 @@ export function AmountInput({ control }: AmountInputProps) {
                 className="text-right pr-8"
                 onChange={(e) => {
                   const formattedValue = formatInputAmount(e.target.value);
-                  field.onChange(formattedValue);
+                  if (formattedValue !== null) {
+                    field.onChange(formattedValue);
+                  }
                 }}
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2">€</span>

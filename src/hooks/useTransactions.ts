@@ -29,11 +29,10 @@ export function useTransactions() {
 
       if (error) throw error;
 
-      // Transform the data to match our Transaction type
       const transformedData = data.map(transaction => ({
         id: transaction.id,
         bankId: transaction.bank_id,
-        date: transaction.date,
+        date: new Date(transaction.date),
         merchant: transaction.merchant,
         amount: transaction.amount,
         mainCategoryId: transaction.main_category_id,
@@ -58,19 +57,10 @@ export function useTransactions() {
   };
 
   const createTransaction = async (data: TransactionFormData): Promise<Transaction | null> => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to create transactions",
-        variant: "destructive",
-      });
-      return null;
-    }
+    if (!user) return null;
 
     try {
       setLoading(true);
-
-      // Prepare transaction data
       const transactionData = {
         user_id: user.id,
         bank_id: data.bankId,
@@ -82,7 +72,6 @@ export function useTransactions() {
         notes: data.notes || null,
       };
 
-      // Create the transaction
       const { data: transaction, error: transactionError } = await supabase
         .from('user_transactions')
         .insert([transactionData])
@@ -91,7 +80,6 @@ export function useTransactions() {
 
       if (transactionError) throw transactionError;
 
-      // If there are tags, create the tag associations
       if (data.tagIds?.length) {
         const { error: tagsError } = await supabase
           .from('transaction_tags')
@@ -110,19 +98,112 @@ export function useTransactions() {
         description: "Transaction created successfully",
       });
 
-      // Refresh the transactions list
       await fetchTransactions();
-
       return transaction;
     } catch (error) {
       const pgError = error as PostgrestError;
-      console.error('Error creating transaction:', pgError);
       toast({
         title: "Error",
         description: `Failed to create transaction: ${pgError.message}`,
         variant: "destructive",
       });
       return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateTransaction = async (id: string, data: TransactionFormData): Promise<Transaction | null> => {
+    if (!user) return null;
+
+    try {
+      setLoading(true);
+      const transactionData = {
+        bank_id: data.bankId,
+        date: data.date.toISOString(),
+        merchant: data.merchant,
+        amount: parseFloat(data.amount),
+        main_category_id: data.mainCategoryId || null,
+        sub_category_id: data.subCategoryId || null,
+        notes: data.notes || null,
+      };
+
+      const { error: transactionError } = await supabase
+        .from('user_transactions')
+        .update(transactionData)
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (transactionError) throw transactionError;
+
+      // Delete existing tags
+      await supabase
+        .from('transaction_tags')
+        .delete()
+        .eq('transaction_id', id);
+
+      // Insert new tags
+      if (data.tagIds?.length) {
+        const { error: tagsError } = await supabase
+          .from('transaction_tags')
+          .insert(
+            data.tagIds.map(tagId => ({
+              transaction_id: id,
+              tag_id: tagId,
+            }))
+          );
+
+        if (tagsError) throw tagsError;
+      }
+
+      toast({
+        title: "Success",
+        description: "Transaction updated successfully",
+      });
+
+      await fetchTransactions();
+      return transactions.find(t => t.id === id) || null;
+    } catch (error) {
+      const pgError = error as PostgrestError;
+      toast({
+        title: "Error",
+        description: `Failed to update transaction: ${pgError.message}`,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteTransaction = async (id: string): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('user_transactions')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Transaction deleted successfully",
+      });
+
+      await fetchTransactions();
+      return true;
+    } catch (error) {
+      const pgError = error as PostgrestError;
+      toast({
+        title: "Error",
+        description: `Failed to delete transaction: ${pgError.message}`,
+        variant: "destructive",
+      });
+      return false;
     } finally {
       setLoading(false);
     }
@@ -136,6 +217,8 @@ export function useTransactions() {
     transactions,
     loading,
     createTransaction,
+    updateTransaction,
+    deleteTransaction,
     refresh: fetchTransactions,
   };
 }
