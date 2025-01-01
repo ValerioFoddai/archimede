@@ -1,4 +1,4 @@
-import { Tag, CreateTagInput, UpdateTagInput } from '@/types/tags';
+import { Tag } from '@/types/tags';
 
 interface TagOperation {
   type: 'create' | 'update' | 'delete';
