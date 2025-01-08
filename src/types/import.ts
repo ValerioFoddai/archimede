@@ -17,3 +17,17 @@ export interface ImportSummary {
     message: string;
   }>;
 }
+
+export interface ImportMapping {
+  id: string;
+  name: string;
+  dateFormat: string;
+  columnMappings: Record<string, string>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ImportConfig {
+  columnMappings: Record<string, string>;
+  dateFormat: string;
+}

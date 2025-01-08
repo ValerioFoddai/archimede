@@ -5,9 +5,7 @@ import { checkDuplicates } from '../lib/import/duplicate-checker';
 import { supabase } from '../lib/supabase';
 import type { TransactionImport } from '../types/import';
 
-interface ImportConfig {
-  columnMappings: Record<string, string>;
-}
+import type { ImportConfig } from '../types/import';
 
 export function useImport() {
   const [loading, setLoading] = useState(false);

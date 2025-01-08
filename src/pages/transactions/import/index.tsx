@@ -1,48 +1,88 @@
-import { useState } from 'react';
-import { DashboardLayout } from '../../../components/layout/dashboard-layout';
-import { FileUpload } from '../../../components/transactions/import/file-upload';
-import { Button } from '../../../components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { ImportPreview } from '../../../components/transactions/import/import-preview';
-import { ImportSummary } from '../../../components/transactions/import/import-summary';
-import { useImport } from '../../../hooks/useImport';
-import type { TransactionImport } from '../../../types/import';
+import { useState } from "react";
+import { read, utils } from "xlsx";
+import { DashboardLayout } from "../../../components/layout/dashboard-layout";
+import { FileUpload } from "../../../components/transactions/import/file-upload";
+import { Button } from "../../../components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
+import { ImportPreview } from "../../../components/transactions/import/import-preview";
+import { ImportSummary } from "../../../components/transactions/import/import-summary";
+import { MappingManager } from "../../../components/transactions/import/mapping-manager";
+import { useImport } from "../../../hooks/useImport";
+import type { ImportMapping, TransactionImport } from "../../../types/import";
 
 interface ColumnMapping {
   sourceColumn: string;
   targetField: string;
 }
 
+const DATE_FORMATS = [
+  { value: "dd/MM/yyyy", label: "DD/MM/YYYY" },
+  { value: "MM/dd/yyyy", label: "MM/DD/YYYY" },
+  { value: "yyyy-MM-dd", label: "YYYY-MM-DD" },
+  { value: "dd-MM-yyyy", label: "DD-MM-YYYY" },
+  { value: "dd.MM.yyyy", label: "DD.MM.YYYY" },
+  { value: "yyyy.MM.dd", label: "YYYY.MM.DD" },
+];
+
 const TARGET_FIELDS = [
-  { id: 'date', label: 'Date' },
-  { id: 'merchant', label: 'Merchant' },
-  { id: 'amount', label: 'Amount' },
-  { id: 'notes', label: 'Notes' },
+  { id: "date", label: "Date" },
+  { id: "merchant", label: "Merchant" },
+  { id: "amount", label: "Amount" },
+  { id: "notes", label: "Notes" },
 ];
 
 // Helper functions
 function getFileColumns(file: File): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        if (file.name.endsWith('.csv')) {
-          // For CSV, get first line and split by comma
+    if (file.name.toLowerCase().endsWith('.xlsx')) {
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const headers = utils.sheet_to_json<string[]>(firstSheet, { 
+            header: 1,
+            raw: false,
+            defval: '',
+            range: 0
+          })[0];
+          
+          if (!headers || headers.length === 0) {
+            throw new Error('No headers found in file');
+          }
+          
+          resolve(headers);
+        } catch (error) {
+          reject(error instanceof Error ? error : new Error('Failed to read file headers'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsArrayBuffer(file);
+    } else {
+      // For CSV files
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
           const firstLine = content.split('\n')[0];
           const columns = firstLine.split(',').map(col => col.trim());
+          if (!columns || columns.length === 0) {
+            throw new Error('No headers found in file');
+          }
           resolve(columns);
-        } else {
-          // For XLSX, use a library like xlsx to read headers
-          // TODO: Implement XLSX support
-          reject(new Error('XLSX support not implemented yet'));
+        } catch (error) {
+          reject(error instanceof Error ? error : new Error('Failed to read file headers'));
         }
-      } catch (error) {
-        reject(error);
-      }
-    };
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsText(file);
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file);
+    }
   });
 }
 
@@ -60,13 +100,29 @@ function guessTargetField(columnName: string): string {
 export function ImportPage() {
   const [fileColumns, setFileColumns] = useState<string[]>([]);
   const [columnMappings, setColumnMappings] = useState<ColumnMapping[]>([]);
+  const [dateFormat, setDateFormat] = useState("dd/MM/yyyy");
   const [transactions, setTransactions] = useState<TransactionImport[]>([]);
   const [importComplete, setImportComplete] = useState(false);
   const { processFile, importTransactions, loading, error } = useImport();
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  
   const [fileError, setFileError] = useState<string | null>(null);
+
+  const handleLoadMapping = (mapping: ImportMapping) => {
+    // Convert mapping.columnMappings from { sourceColumn: targetField } to ColumnMapping[]
+    const newMappings = fileColumns.map(column => {
+      // Find if this column has a mapping
+      const targetField = mapping.columnMappings[column] || '';
+      console.log(`Loading mapping for column "${column}": ${targetField}`);
+      return {
+        sourceColumn: column,
+        targetField,
+      };
+    });
+    console.log('Loaded mappings:', newMappings);
+    setColumnMappings(newMappings);
+    setDateFormat(mapping.dateFormat);
+  };
 
   const handleFileUpload = async (file: File) => {
     try {
@@ -119,10 +175,21 @@ export function ImportPage() {
 
     const mappingConfig = {
       columnMappings: columnMappings.reduce((acc, { sourceColumn, targetField }) => {
-        if (targetField) acc[sourceColumn] = targetField;
+        if (targetField) {
+          // Map target field (e.g., 'date') to source column (e.g., 'Transaction Date')
+          acc[targetField] = sourceColumn;
+        }
         return acc;
-      }, {} as Record<string, string>)
+      }, {} as Record<string, string>),
+      dateFormat,
     };
+
+    console.log('Preview with config:', {
+      ...mappingConfig,
+      example: 'If source column is "Transaction Date" and target is "date", mapping will be { date: "Transaction Date" }'
+    });
+
+    console.log('Preview with config:', mappingConfig);
 
     const result = await processFile(uploadedFile, mappingConfig);
     setTransactions(result);
@@ -158,40 +225,71 @@ export function ImportPage() {
         )}
 
         {fileColumns.length > 0 && !transactions.length && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Map Columns</h3>
-            <div className="grid gap-4">
-              {columnMappings.map(({ sourceColumn, targetField }) => (
-                <div key={sourceColumn} className="flex items-center gap-4">
-                  <div className="w-1/2">
-                    <p className="text-sm font-medium">{sourceColumn}</p>
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Map Columns</h3>
+              <div className="grid gap-4">
+                {columnMappings.map(({ sourceColumn, targetField }) => (
+                  <div key={sourceColumn} className="flex items-center gap-4">
+                    <div className="w-1/2">
+                      <p className="text-sm font-medium">{sourceColumn}</p>
+                    </div>
+                    <div className="w-1/2">
+                      <Select
+                        value={targetField}
+                        onValueChange={(value: string) =>
+                          handleMappingChange(sourceColumn, value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select field" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Skip this column</SelectItem>
+                          {TARGET_FIELDS.map((field) => (
+                            <SelectItem key={field.id} value={field.id}>
+                              {field.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="w-1/2">
-                    <Select
-                      value={targetField}
-                      onValueChange={(value: string) => handleMappingChange(sourceColumn, value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select field" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">Skip this column</SelectItem>
-                        {TARGET_FIELDS.map(field => (
-                          <SelectItem key={field.id} value={field.id}>
-                            {field.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Date Format</label>
+                <Select value={dateFormat} onValueChange={setDateFormat}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select date format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DATE_FORMATS.map((format) => (
+                      <SelectItem key={format.value} value={format.value}>
+                        {format.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={handlePreview} disabled={loading}>
+                  Preview Import
+                </Button>
+              </div>
             </div>
-            <div className="flex justify-end">
-              <Button onClick={handlePreview} disabled={loading}>
-                Preview Import
-              </Button>
-            </div>
+
+            <MappingManager
+              columnMappings={columnMappings.reduce((acc, { sourceColumn, targetField }) => {
+                if (targetField) {
+                  // For MappingManager, we store as { "Transaction Date": "date" }
+                  acc[sourceColumn] = targetField;
+                }
+                return acc;
+              }, {} as Record<string, string>)}
+              dateFormat={dateFormat}
+              onLoadMapping={handleLoadMapping}
+            />
           </div>
         )}
 
