@@ -61,20 +61,6 @@ export function SignUpForm() {
     }
   }
 
-  async function signInWithGoogle() {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (error) throw error;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
-    }
-  }
-
   return (
     <AuthCard>
       <div className="space-y-6">
@@ -85,6 +71,7 @@ export function SignUpForm() {
           </p>
         </div>
 
+        {/* Google Sign Up temporarily removed
         <SocialButton
           onClick={signInWithGoogle}
           icon={<img src="/google.svg" alt="Google" className="w-5 h-5" />}
@@ -93,6 +80,7 @@ export function SignUpForm() {
         </SocialButton>
 
         <AuthDivider />
+        */}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

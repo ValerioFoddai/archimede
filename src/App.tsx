@@ -5,6 +5,8 @@ import { LoginForm } from './components/auth/login-form';
 import { ForgotPasswordForm } from './components/auth/forgot-password-form';
 import { DashboardPage } from './pages/dashboard';
 import { TransactionsPage } from './pages/transactions';
+import { ImportPage } from './pages/transactions/import';
+import { ImportBankPage } from './pages/transactions/import/[bankId]';
 import { SettingsLayout } from './pages/settings/layout';
 import { SettingsPage } from './pages/settings';
 import { ExpenseCategoriesPage } from './pages/settings/expense-categories';
@@ -36,6 +38,8 @@ function AppRoutes() {
       
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+      <Route path="/transactions/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
+      <Route path="/transactions/import/:bankId" element={<ProtectedRoute><ImportBankPage /></ProtectedRoute>} />
       
       <Route path="/settings" element={<ProtectedRoute><SettingsLayout /></ProtectedRoute>}>
         <Route index element={<SettingsPage />} />

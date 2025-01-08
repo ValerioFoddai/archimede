@@ -1,4 +1,5 @@
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 interface TransactionHeaderProps {
@@ -14,10 +15,18 @@ export function TransactionHeader({ onAddTransaction }: TransactionHeaderProps) 
           View and manage your transactions
         </p>
       </div>
-      <Button onClick={onAddTransaction}>
-        <Plus className="mr-2 h-4 w-4" />
-        Add Transaction
-      </Button>
+      <div className="flex gap-2">
+        <Button variant="outline" asChild>
+          <Link to="/transactions/import">
+            <Upload className="mr-2 h-4 w-4" />
+            Import
+          </Link>
+        </Button>
+        <Button onClick={onAddTransaction}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Transaction
+        </Button>
+      </div>
     </div>
   );
 }
