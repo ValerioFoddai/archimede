@@ -23,7 +23,7 @@ import { AuthDivider } from './auth-divider';
 import { SocialButton } from './social-button';
 
 export function LoginForm() {
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,26 +60,6 @@ export function LoginForm() {
     }
   }
 
-  async function handleGoogleSignIn() {
-    try {
-      setError(null);
-      await signInWithGoogle();
-    } catch (err) {
-      console.error('Google sign-in error:', err);
-      if (err instanceof Error) {
-        if (err.message.includes('popup_closed_by_user')) {
-          setError('Sign in cancelled. Please try again.');
-        } else if (err.message.includes('rate limit')) {
-          setError('Too many attempts. Please try again later.');
-        } else {
-          setError(err.message);
-        }
-      } else {
-        setError('Failed to sign in with Google. Please try again.');
-      }
-    }
-  }
-
   return (
     <AuthCard>
       <div className="space-y-6">
@@ -90,6 +70,7 @@ export function LoginForm() {
           </p>
         </div>
 
+        {/* Google Sign In temporarily removed
         <SocialButton
           onClick={handleGoogleSignIn}
           icon={<img src="/google.svg" alt="Google" className="w-5 h-5" />}
@@ -98,6 +79,7 @@ export function LoginForm() {
         </SocialButton>
 
         <AuthDivider />
+        */}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
