@@ -85,7 +85,7 @@ export function TransactionList({ transactions, loading, onEdit, onDelete }: Tra
                 </TableCell>
                 <TableCell>{bank?.name}</TableCell>
                 <TableCell>{transaction.merchant}</TableCell>
-                <TableCell className="text-right font-mono">
+                <TableCell className="text-right">
                   {formatDisplayAmount(transaction.amount)}
                 </TableCell>
                 <TableCell>
