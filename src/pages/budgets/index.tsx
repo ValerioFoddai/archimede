@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { Button } from '@/components/ui/button';
+import { DashboardLayout } from '../../components/layout/dashboard-layout';
+import { Button } from '../../components/ui/button';
 import {
   Table,
   TableBody,
@@ -9,19 +9,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
+} from '../../components/ui/table';
+import { Input } from '../../components/ui/input';
+import { Progress } from '../../components/ui/progress';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
-import { useBudgets } from '@/hooks/useBudgets';
-import { formatDisplayAmount, formatInputAmount } from '@/lib/format';
+} from '../../components/ui/select';
+import { useExpenseCategories } from '../../hooks/useExpenseCategories';
+import { useBudgets } from '../../hooks/useBudgets';
+import { formatDisplayAmount, formatInputAmount } from '../../lib/format';
 
 // Get current month and year
 const currentDate = new Date();
@@ -106,11 +106,9 @@ export function BudgetsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Category</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Recommended Range</TableHead>
                 <TableHead>Current Budget</TableHead>
                 <TableHead>Spent</TableHead>
-                <TableHead>Progress</TableHead>
+                <TableHead className="w-[500px]">Progress</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -132,18 +130,6 @@ export function BudgetsPage() {
                   <TableRow key={category.id}>
                     <TableCell className="font-medium">
                       {category.name}
-                    </TableCell>
-                    <TableCell className="max-w-[200px]">
-                      {category.description}
-                    </TableCell>
-                    <TableCell>
-                      {category.recommended_budget_min && category.recommended_budget_max ? (
-                        <span className="text-muted-foreground">
-                          {formatDisplayAmount(category.recommended_budget_min)} - {formatDisplayAmount(category.recommended_budget_max)}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">Not specified</span>
-                      )}
                     </TableCell>
                     <TableCell>
                       {editingCategory === category.id ? (
@@ -181,7 +167,7 @@ export function BudgetsPage() {
                         <div className="flex items-center gap-2">
                           <Progress 
                             value={monthlyPercentage} 
-                            className="w-[100px]"
+                            className="w-[400px]"
                             indicatorClassName={progressColor}
                           />
                           <span className="text-sm text-muted-foreground">
