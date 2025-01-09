@@ -31,7 +31,7 @@ export function useTransactions() {
 
       const transformedData = data.map(transaction => ({
         id: transaction.id,
-        bankId: transaction.bank_id,
+        bankId: transaction.bank_id || undefined,
         date: new Date(transaction.date),
         merchant: transaction.merchant,
         amount: transaction.amount,
@@ -63,7 +63,7 @@ export function useTransactions() {
       setLoading(true);
       const transactionData = {
         user_id: user.id,
-        bank_id: data.bankId,
+        bank_id: data.bankId || null,
         date: data.date.toISOString(),
         merchant: data.merchant,
         amount: parseFloat(data.amount),
@@ -114,12 +114,12 @@ export function useTransactions() {
   };
 
   const updateTransaction = async (id: string, data: TransactionFormData): Promise<Transaction | null> => {
-    if (!user) return null;
+    if (!user || !id) return null;
 
     try {
       setLoading(true);
       const transactionData = {
-        bank_id: data.bankId,
+        bank_id: data.bankId || null,
         date: data.date.toISOString(),
         merchant: data.merchant,
         amount: parseFloat(data.amount),
@@ -177,7 +177,7 @@ export function useTransactions() {
   };
 
   const deleteTransaction = async (id: string): Promise<boolean> => {
-    if (!user) return false;
+    if (!user || !id) return false;
 
     try {
       setLoading(true);
