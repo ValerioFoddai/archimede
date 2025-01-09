@@ -1,32 +1,23 @@
-import { useState } from "react";
-import { read, utils } from "xlsx";
-import { DashboardLayout } from "../../../components/layout/dashboard-layout";
-import { FileUpload } from "../../../components/transactions/import/file-upload";
-import { Button } from "../../../components/ui/button";
+import { useState, useCallback } from 'react';
+import { read, utils } from 'xlsx';
+import { v4 as uuidv4 } from 'uuid';
+import { DashboardLayout } from '../../../components/layout/dashboard-layout';
+import { FileUpload } from '../../../components/transactions/import/file-upload';
+import { Button } from '../../../components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
-import { ImportPreview } from "../../../components/transactions/import/import-preview";
-import { ImportSummary } from "../../../components/transactions/import/import-summary";
-import { MappingManager } from "../../../components/transactions/import/mapping-manager";
-import { useImport } from "../../../hooks/useImport";
-import type { ImportMapping, TransactionImport } from "../../../types/import";
-
-interface ColumnMapping {
-  sourceColumn: string;
-  targetField: string;
-}
-
-const TARGET_FIELDS = [
-  { id: "date", label: "Date" },
-  { id: "merchant", label: "Merchant" },
-  { id: "amount", label: "Amount" },
-  { id: "notes", label: "Notes" },
-];
+} from '../../../components/ui/select';
+import { ImportPreview } from '../../../components/transactions/import/import-preview';
+import { ImportSummary } from '../../../components/transactions/import/import-summary';
+import { useImport } from '../../../hooks/useImport';
+import type { TransactionImport } from '../../../types/import';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const DATE_FORMATS = [
   { value: "dd/MM/yyyy", label: "DD/MM/YYYY" },
@@ -37,46 +28,59 @@ const DATE_FORMATS = [
   { value: "yyyy.MM.dd", label: "YYYY.MM.DD" },
 ];
 
+const TARGET_FIELDS = [
+  { id: "date", label: "Date", description: "Transaction date" },
+  { id: "merchant", label: "Merchant", description: "Name of the merchant" },
+  { id: "amount", label: "Amount", description: "Transaction amount" },
+  { id: "notes", label: "Notes", description: "Additional transaction details" },
+];
+
+const SKIP_COLUMN = "_skip";
+
+interface ColumnMapping {
+  id: string;
+  sourceColumn: string;
+  targetField: string;
+}
+
 export function ImportPage() {
   const [fileColumns, setFileColumns] = useState<string[]>([]);
   const [columnMappings, setColumnMappings] = useState<ColumnMapping[]>([]);
   const [dateFormat, setDateFormat] = useState("dd/MM/yyyy");
   const [transactions, setTransactions] = useState<TransactionImport[]>([]);
   const [importComplete, setImportComplete] = useState(false);
-  const { processFile, importTransactions, loading, error } = useImport();
-
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
-  const handleLoadMapping = (mapping: ImportMapping) => {
-    const newMappings = fileColumns.map(column => ({
-      sourceColumn: column,
-      targetField: mapping.columnMappings[column] || 'none',
-    }));
-    setColumnMappings(newMappings);
-    setDateFormat(mapping.dateFormat);
-  };
+  const { processFile, importTransactions, loading, error: importError } = useImport();
 
   const handleFileUpload = async (file: File) => {
     try {
       setFileError(null);
       setUploadedFile(file);
+      // Reset state
       setFileColumns([]);
       setColumnMappings([]);
       setTransactions([]);
       setImportComplete(false);
 
+      console.log('Reading file:', file.name);
+      // Get columns from file
       const columns = await getFileColumns(file);
+      console.log('Found columns:', columns);
       setFileColumns(columns);
 
+      // Try to auto-map columns based on names
       const initialMappings = columns.map(column => ({
+        id: uuidv4(),
         sourceColumn: column,
-        targetField: guessTargetField(column) || 'none'
+        targetField: guessTargetField(column)
       }));
       setColumnMappings(initialMappings);
     } catch (err) {
       console.error('Error uploading file:', err);
       setFileError(err instanceof Error ? err.message : 'Failed to read file');
+      // Reset states on error
       setUploadedFile(null);
       setFileColumns([]);
       setColumnMappings([]);
@@ -98,7 +102,7 @@ export function ImportPage() {
 
     const mappingConfig = {
       columnMappings: columnMappings.reduce((acc, { sourceColumn, targetField }) => {
-        if (targetField && targetField !== 'none') {
+        if (targetField && targetField !== SKIP_COLUMN) {
           acc[targetField] = sourceColumn;
         }
         return acc;
@@ -125,85 +129,126 @@ export function ImportPage() {
           </p>
         </div>
 
-        {(error || fileError) && (
-          <div className="bg-destructive/15 text-destructive px-4 py-2 rounded-md">
-            {fileError || error}
-          </div>
+        {(importError || fileError) && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {fileError || importError}
+            </AlertDescription>
+          </Alert>
         )}
 
         {!fileColumns.length && (
           <FileUpload
             onUpload={handleFileUpload}
             loading={loading}
-            accept=".csv,.xlsx"
+            selectedFile={uploadedFile}
           />
         )}
 
         {fileColumns.length > 0 && !transactions.length && (
           <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Map Columns</h3>
-              <div className="grid gap-4">
-                {columnMappings.map(({ sourceColumn, targetField }) => (
-                  <div key={sourceColumn} className="flex items-center gap-4">
-                    <div className="w-1/2">
-                      <p className="text-sm font-medium">{sourceColumn}</p>
-                    </div>
-                    <div className="w-1/2">
-                      <Select
-                        value={targetField}
-                        onValueChange={(value) => handleMappingChange(sourceColumn, value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select field" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Skip this column</SelectItem>
-                          {TARGET_FIELDS.map((field) => (
-                            <SelectItem key={field.id} value={field.id}>
-                              {field.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Map Columns</CardTitle>
+                <CardDescription>
+                  Match the columns from your file to the corresponding transaction fields
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40%]">File Column</TableHead>
+                        <TableHead>Maps To</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {columnMappings.map(({ id, sourceColumn, targetField }) => (
+                        <TableRow key={id}>
+                          <TableCell className="font-medium">
+                            {sourceColumn}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={targetField}
+                              onValueChange={(value: string) =>
+                                handleMappingChange(sourceColumn, value)
+                              }
+                            >
+                              <SelectTrigger className="w-[300px]">
+                                <SelectValue placeholder="Select field" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value={SKIP_COLUMN}>
+                                  <div className="space-y-1">
+                                    <div>Skip this column</div>
+                                    <p className="text-xs text-muted-foreground">
+                                      Don't import this column
+                                    </p>
+                                  </div>
+                                </SelectItem>
+                                {TARGET_FIELDS.map((field) => (
+                                  <SelectItem key={field.id} value={field.id}>
+                                    <div className="space-y-1">
+                                      <div>{field.label}</div>
+                                      <p className="text-xs text-muted-foreground">
+                                        {field.description}
+                                      </p>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Date Format</CardTitle>
+                    <CardDescription>
+                      Select the format that matches your file's date format
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Select value={dateFormat} onValueChange={setDateFormat}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Select date format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DATE_FORMATS.map((format) => (
+                          <SelectItem key={format.value} value={format.value}>
+                            {format.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </CardContent>
+                </Card>
+
+                <div className="flex justify-end">
+                  <div className="space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setFileColumns([]);
+                        setColumnMappings([]);
+                        setUploadedFile(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handlePreview} disabled={loading}>
+                      Preview Import
+                    </Button>
                   </div>
-                ))}
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Date Format</label>
-                <Select value={dateFormat} onValueChange={setDateFormat}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select date format" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DATE_FORMATS.map((format) => (
-                      <SelectItem key={format.value} value={format.value}>
-                        {format.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex justify-end">
-                <Button onClick={handlePreview} disabled={loading}>
-                  Preview Import
-                </Button>
-              </div>
-            </div>
-
-            <MappingManager
-              columnMappings={columnMappings.reduce((acc, { sourceColumn, targetField }) => {
-                if (targetField && targetField !== 'none') {
-                  acc[sourceColumn] = targetField;
-                }
-                return acc;
-              }, {} as Record<string, string>)}
-              dateFormat={dateFormat}
-              onLoadMapping={handleLoadMapping}
-            />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
@@ -236,7 +281,7 @@ export function ImportPage() {
   );
 }
 
-// Helper functions
+// Helper function to guess target field based on column name
 function guessTargetField(columnName: string): string {
   const normalized = columnName.toLowerCase();
   
@@ -245,9 +290,10 @@ function guessTargetField(columnName: string): string {
   if (normalized.includes('amount') || normalized.includes('importo')) return 'amount';
   if (normalized.includes('note') || normalized.includes('description')) return 'notes';
   
-  return 'none';
+  return SKIP_COLUMN;
 }
 
+// Helper function to get file columns
 async function getFileColumns(file: File): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -276,11 +322,12 @@ async function getFileColumns(file: File): Promise<string[]> {
       reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsArrayBuffer(file);
     } else {
+      // For CSV files
       reader.onload = (e) => {
         try {
           const content = e.target?.result as string;
           const firstLine = content.split('\n')[0];
-          const columns = firstLine.split(',').map(col => col.trim());
+          const columns = firstLine.split(',').map(col => col.trim().replace(/^["']|["']$/g, ''));
           if (!columns || columns.length === 0) {
             throw new Error('No headers found in file');
           }

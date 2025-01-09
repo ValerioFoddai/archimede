@@ -1,9 +1,7 @@
 import { z } from 'zod';
 
 export const transactionSchema = z.object({
-  bankId: z.string({
-    required_error: 'Please select a bank',
-  }),
+  bankId: z.string().optional(),
   date: z.date({
     required_error: 'Please select a date',
   }),
@@ -27,7 +25,7 @@ export type TransactionFormData = z.infer<typeof transactionSchema>;
 
 export interface Transaction {
   id: string;
-  bankId: string;
+  bankId?: string;
   date: Date;
   merchant: string;
   amount: number;
@@ -37,4 +35,11 @@ export interface Transaction {
   notes?: string;
   userId: string;
   createdAt: string;
+}
+
+export interface ColumnVisibility {
+  bank: boolean;
+  category: boolean;
+  tags: boolean;
+  notes: boolean;
 }

@@ -4,7 +4,6 @@ import { parseImportFile } from '../lib/import/parser';
 import { checkDuplicates } from '../lib/import/duplicate-checker';
 import { supabase } from '../lib/supabase';
 import type { TransactionImport } from '../types/import';
-
 import type { ImportConfig } from '../types/import';
 
 export function useImport() {
@@ -37,25 +36,38 @@ export function useImport() {
       setLoading(true);
       setError(null);
 
-      const validTransactions = transactions.filter(
-        t => t.status !== 'error' && t.status !== 'duplicate'
-      );
+      // Filter out transactions that are not valid for import
+      const validTransactions = transactions.filter(t => t.status === 'pending');
 
-      const { error: importError } = await supabase
+      if (validTransactions.length === 0) {
+        return 0;
+      }
+
+      // Prepare transactions for import
+      const transactionsToInsert = validTransactions.map(t => ({
+        user_id: user.id,
+        date: t.date.toISOString(),
+        merchant: t.merchant,
+        amount: t.amount,
+        notes: t.notes,
+      }));
+
+      // Insert transactions
+      const { error: importError, data } = await supabase
         .from('user_transactions')
-        .insert(
-          validTransactions.map(t => ({
-            user_id: user.id,
-            date: t.date.toISOString(),
-            merchant: t.merchant,
-            amount: t.amount,
-            notes: t.notes,
-          }))
-        );
+        .insert(transactionsToInsert)
+        .select();
 
       if (importError) throw importError;
 
-      return validTransactions.length;
+      // Update the status of imported transactions
+      transactions.forEach(t => {
+        if (t.status === 'pending') {
+          t.status = 'success';
+        }
+      });
+
+      return data?.length || 0;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to import transactions';
       setError(message);

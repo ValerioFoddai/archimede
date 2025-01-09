@@ -138,6 +138,7 @@ export async function parseImportFile(
       try {
         return transformRow(row, config);
       } catch (error) {
+        console.error('Error transforming row:', error, { row, config });
         return {
           date: new Date(),
           merchant: row[config.columnMappings.merchant] || '',
@@ -158,10 +159,26 @@ function transformRow(
   config: ImportConfig
 ): TransactionImport {
   try {
-    // Get date
+    // Get date - try multiple date columns if primary is empty
     const dateColumn = config.columnMappings.date;
     if (!dateColumn) throw new Error('Date column not mapped');
-    const dateValue = row[dateColumn];
+    
+    let dateValue = row[dateColumn];
+    if (!dateValue) {
+      // Try alternative date columns
+      const altDateColumns = Object.keys(row).filter(col => 
+        col.toLowerCase().includes('data') || 
+        col.toLowerCase().includes('date')
+      );
+      
+      for (const col of altDateColumns) {
+        if (row[col]) {
+          dateValue = row[col];
+          break;
+        }
+      }
+    }
+    
     if (!dateValue) throw new Error('Date is required');
     
     const date = tryParseDate(dateValue, config.dateFormat);
