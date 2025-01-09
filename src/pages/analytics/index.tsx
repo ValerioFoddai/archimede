@@ -1,13 +1,6 @@
 import { useState } from 'react';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExpenseCategoryChart } from './components/expense-category-chart';
 import { SubCategoryChart } from './components/sub-category-chart';
 import { CashFlowChart } from './components/cash-flow-chart';
@@ -16,10 +9,15 @@ import { TimeFilter } from './components/time-filter';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useExpenseCategories } from '@/hooks/useExpenseCategories';
 
-export type TimeRange = '7d' | '30d' | '3m' | '6m' | 'ytd' | 'custom';
+// Format: month-YYYY-MM (e.g., month-2024-03 for March 2024)
+type MonthRange = `month-${number}-${string}`;
+
+export type TimeRange = 
+  | '7d'           // Last 7 days
+  | MonthRange;    // Specific month selection (e.g., month-2024-03)
 
 export function AnalyticsPage() {
-  const [timeRange, setTimeRange] = useState<TimeRange>('30d');
+  const [timeRange, setTimeRange] = useState<TimeRange>('7d');
   const [selectedCategory, setSelectedCategory] = useState<number>();
   const { transactions, loading } = useTransactions();
   const { categories } = useExpenseCategories();
@@ -56,23 +54,8 @@ export function AnalyticsPage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader>
               <CardTitle>Expense Categories</CardTitle>
-              <Select 
-                value={selectedCategory?.toString()} 
-                onValueChange={(value) => setSelectedCategory(Number(value))}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {expenseCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </CardHeader>
             <CardContent>
               <ExpenseCategoryChart 
