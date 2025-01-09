@@ -40,6 +40,18 @@ export function AnalyticsPage() {
           <TimeFilter value={timeRange} onChange={setTimeRange} />
         </div>
 
+        <Card>
+          <CardHeader>
+            <CardTitle>Cash Flow</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CashFlowChart 
+              transactions={transactions} 
+              timeRange={timeRange} 
+            />
+          </CardContent>
+        </Card>
+
         <SummaryStats transactions={transactions} timeRange={timeRange} />
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -83,18 +95,6 @@ export function AnalyticsPage() {
                 transactions={transactions} 
                 timeRange={timeRange}
                 mainCategoryId={selectedCategory}
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Cash Flow</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CashFlowChart 
-                transactions={transactions} 
-                timeRange={timeRange} 
               />
             </CardContent>
           </Card>

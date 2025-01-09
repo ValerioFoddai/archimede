@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
+import { format } from 'date-fns';
 import { filterTransactionsByTimeRange } from '@/lib/analytics';
 import type { Transaction } from '@/types/transactions';
 import type { TimeRange } from '../index';
@@ -22,7 +23,7 @@ export function CashFlowChart({ transactions, timeRange }: CashFlowChartProps) {
     
     // Group transactions by date
     const dailyData = filteredTransactions.reduce((acc, transaction) => {
-      const date = transaction.date.toISOString().split('T')[0];
+      const date = format(transaction.date, 'MMM dd');
       if (!acc[date]) {
         acc[date] = { income: 0, expenses: 0 };
       }
@@ -48,46 +49,63 @@ export function CashFlowChart({ transactions, timeRange }: CashFlowChartProps) {
     }
 
     chartInstance.current = new Chart(ctx, {
-      type: 'line',
+      type: 'bar',
       data: {
         labels: dates,
         datasets: [
           {
-            label: 'Income',
+            label: 'Money In',
             data: incomeData,
-            borderColor: '#22c55e',
-            backgroundColor: '#22c55e20',
-            fill: true,
+            backgroundColor: '#22c55e',
+            borderRadius: 4,
           },
           {
-            label: 'Expenses',
+            label: 'Money Out',
             data: expenseData,
-            borderColor: '#ef4444',
-            backgroundColor: '#ef444420',
-            fill: true,
+            backgroundColor: '#ef4444',
+            borderRadius: 4,
           },
         ],
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         interaction: {
           mode: 'index',
           intersect: false,
         },
         scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+          },
           y: {
             beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)',
+            },
             ticks: {
               callback: (value) => {
                 return new Intl.NumberFormat('en-US', {
                   style: 'currency',
                   currency: 'EUR',
+                  notation: 'compact',
                 }).format(value as number);
               },
             },
           },
         },
         plugins: {
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: {
+              boxWidth: 8,
+              boxHeight: 8,
+              borderRadius: 4,
+            },
+          },
           tooltip: {
             callbacks: {
               label: (context) => {
@@ -111,7 +129,7 @@ export function CashFlowChart({ transactions, timeRange }: CashFlowChartProps) {
   }, [transactions, timeRange]);
 
   return (
-    <div className="relative aspect-[16/9] w-full">
+    <div className="relative h-[200px] w-full">
       <canvas ref={chartRef} />
     </div>
   );
