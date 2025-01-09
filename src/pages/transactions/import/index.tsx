@@ -21,6 +21,13 @@ interface ColumnMapping {
   targetField: string;
 }
 
+const TARGET_FIELDS = [
+  { id: "date", label: "Date" },
+  { id: "merchant", label: "Merchant" },
+  { id: "amount", label: "Amount" },
+  { id: "notes", label: "Notes" },
+];
+
 const DATE_FORMATS = [
   { value: "dd/MM/yyyy", label: "DD/MM/YYYY" },
   { value: "MM/dd/yyyy", label: "MM/DD/YYYY" },
@@ -29,73 +36,6 @@ const DATE_FORMATS = [
   { value: "dd.MM.yyyy", label: "DD.MM.YYYY" },
   { value: "yyyy.MM.dd", label: "YYYY.MM.DD" },
 ];
-
-const TARGET_FIELDS = [
-  { id: "date", label: "Date" },
-  { id: "merchant", label: "Merchant" },
-  { id: "amount", label: "Amount" },
-  { id: "notes", label: "Notes" },
-];
-
-// Helper functions
-function getFileColumns(file: File): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    if (file.name.toLowerCase().endsWith('.xlsx')) {
-      reader.onload = (e) => {
-        try {
-          const data = e.target?.result;
-          const workbook = read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const headers = utils.sheet_to_json<string[]>(firstSheet, { 
-            header: 1,
-            raw: false,
-            defval: '',
-            range: 0
-          })[0];
-          
-          if (!headers || headers.length === 0) {
-            throw new Error('No headers found in file');
-          }
-          
-          resolve(headers);
-        } catch (error) {
-          reject(error instanceof Error ? error : new Error('Failed to read file headers'));
-        }
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsArrayBuffer(file);
-    } else {
-      // For CSV files
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const firstLine = content.split('\n')[0];
-          const columns = firstLine.split(',').map(col => col.trim());
-          if (!columns || columns.length === 0) {
-            throw new Error('No headers found in file');
-          }
-          resolve(columns);
-        } catch (error) {
-          reject(error instanceof Error ? error : new Error('Failed to read file headers'));
-        }
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsText(file);
-    }
-  });
-}
-
-function guessTargetField(columnName: string): string {
-  const normalized = columnName.toLowerCase();
-  
-  if (normalized.includes('date') || normalized.includes('data')) return 'date';
-  if (normalized.includes('merchant') || normalized.includes('nome')) return 'merchant';
-  if (normalized.includes('amount') || normalized.includes('importo')) return 'amount';
-  if (normalized.includes('note') || normalized.includes('description')) return 'notes';
-  
-  return '';
-}
 
 export function ImportPage() {
   const [fileColumns, setFileColumns] = useState<string[]>([]);
@@ -109,17 +49,10 @@ export function ImportPage() {
   const [fileError, setFileError] = useState<string | null>(null);
 
   const handleLoadMapping = (mapping: ImportMapping) => {
-    // Convert mapping.columnMappings from { sourceColumn: targetField } to ColumnMapping[]
-    const newMappings = fileColumns.map(column => {
-      // Find if this column has a mapping
-      const targetField = mapping.columnMappings[column] || '';
-      console.log(`Loading mapping for column "${column}": ${targetField}`);
-      return {
-        sourceColumn: column,
-        targetField,
-      };
-    });
-    console.log('Loaded mappings:', newMappings);
+    const newMappings = fileColumns.map(column => ({
+      sourceColumn: column,
+      targetField: mapping.columnMappings[column] || 'none',
+    }));
     setColumnMappings(newMappings);
     setDateFormat(mapping.dateFormat);
   };
@@ -128,32 +61,22 @@ export function ImportPage() {
     try {
       setFileError(null);
       setUploadedFile(file);
-      // Reset state
       setFileColumns([]);
       setColumnMappings([]);
       setTransactions([]);
       setImportComplete(false);
 
-      console.log('Reading file:', file.name);
-      // Get columns from file
       const columns = await getFileColumns(file);
-      console.log('Found columns:', columns);
       setFileColumns(columns);
 
-      // Try to auto-map columns based on names
-      const initialMappings = columns.map(column => {
-        const guessed = guessTargetField(column);
-        console.log('Guessed mapping:', column, '->', guessed);
-        return {
-          sourceColumn: column,
-          targetField: guessed
-        };
-      });
+      const initialMappings = columns.map(column => ({
+        sourceColumn: column,
+        targetField: guessTargetField(column) || 'none'
+      }));
       setColumnMappings(initialMappings);
     } catch (err) {
       console.error('Error uploading file:', err);
       setFileError(err instanceof Error ? err.message : 'Failed to read file');
-      // Reset states on error
       setUploadedFile(null);
       setFileColumns([]);
       setColumnMappings([]);
@@ -175,21 +98,13 @@ export function ImportPage() {
 
     const mappingConfig = {
       columnMappings: columnMappings.reduce((acc, { sourceColumn, targetField }) => {
-        if (targetField) {
-          // Map target field (e.g., 'date') to source column (e.g., 'Transaction Date')
+        if (targetField && targetField !== 'none') {
           acc[targetField] = sourceColumn;
         }
         return acc;
       }, {} as Record<string, string>),
       dateFormat,
     };
-
-    console.log('Preview with config:', {
-      ...mappingConfig,
-      example: 'If source column is "Transaction Date" and target is "date", mapping will be { date: "Transaction Date" }'
-    });
-
-    console.log('Preview with config:', mappingConfig);
 
     const result = await processFile(uploadedFile, mappingConfig);
     setTransactions(result);
@@ -237,15 +152,13 @@ export function ImportPage() {
                     <div className="w-1/2">
                       <Select
                         value={targetField}
-                        onValueChange={(value: string) =>
-                          handleMappingChange(sourceColumn, value)
-                        }
+                        onValueChange={(value) => handleMappingChange(sourceColumn, value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select field" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Skip this column</SelectItem>
+                          <SelectItem value="none">Skip this column</SelectItem>
                           {TARGET_FIELDS.map((field) => (
                             <SelectItem key={field.id} value={field.id}>
                               {field.label}
@@ -257,6 +170,7 @@ export function ImportPage() {
                   </div>
                 ))}
               </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Date Format</label>
                 <Select value={dateFormat} onValueChange={setDateFormat}>
@@ -272,6 +186,7 @@ export function ImportPage() {
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="flex justify-end">
                 <Button onClick={handlePreview} disabled={loading}>
                   Preview Import
@@ -281,8 +196,7 @@ export function ImportPage() {
 
             <MappingManager
               columnMappings={columnMappings.reduce((acc, { sourceColumn, targetField }) => {
-                if (targetField) {
-                  // For MappingManager, we store as { "Transaction Date": "date" }
+                if (targetField && targetField !== 'none') {
                   acc[sourceColumn] = targetField;
                 }
                 return acc;
@@ -320,4 +234,63 @@ export function ImportPage() {
       </div>
     </DashboardLayout>
   );
+}
+
+// Helper functions
+function guessTargetField(columnName: string): string {
+  const normalized = columnName.toLowerCase();
+  
+  if (normalized.includes('date') || normalized.includes('data')) return 'date';
+  if (normalized.includes('merchant') || normalized.includes('nome')) return 'merchant';
+  if (normalized.includes('amount') || normalized.includes('importo')) return 'amount';
+  if (normalized.includes('note') || normalized.includes('description')) return 'notes';
+  
+  return 'none';
+}
+
+async function getFileColumns(file: File): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    if (file.name.toLowerCase().endsWith('.xlsx')) {
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const headers = utils.sheet_to_json<string[]>(firstSheet, { 
+            header: 1,
+            raw: false,
+            defval: '',
+            range: 0
+          })[0];
+          
+          if (!headers || headers.length === 0) {
+            throw new Error('No headers found in file');
+          }
+          
+          resolve(headers);
+        } catch (error) {
+          reject(error instanceof Error ? error : new Error('Failed to read file headers'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const firstLine = content.split('\n')[0];
+          const columns = firstLine.split(',').map(col => col.trim());
+          if (!columns || columns.length === 0) {
+            throw new Error('No headers found in file');
+          }
+          resolve(columns);
+        } catch (error) {
+          reject(error instanceof Error ? error : new Error('Failed to read file headers'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file);
+    }
+  });
 }
