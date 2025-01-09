@@ -1,13 +1,20 @@
 import { useState } from 'react';
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardLayout } from "../../components/layout/dashboard-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 import { ExpenseCategoryChart } from './components/expense-category-chart';
 import { SubCategoryChart } from './components/sub-category-chart';
 import { CashFlowChart } from './components/cash-flow-chart';
 import { SummaryStats } from './components/summary-stats';
 import { TimeFilter } from './components/time-filter';
-import { useTransactions } from '@/hooks/useTransactions';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
+import { useTransactions } from '../../hooks/useTransactions';
+import { useExpenseCategories } from '../../hooks/useExpenseCategories';
 
 // Format: month-YYYY-MM (e.g., month-2024-03 for March 2024)
 type MonthRange = `month-${number}-${string}`;
@@ -66,12 +73,27 @@ export function AnalyticsPage() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>
                 {selectedCategory 
                   ? `${categories.find(c => c.id === selectedCategory)?.name} Breakdown`
                   : 'Select a category to see subcategories'}
               </CardTitle>
+              <Select 
+                value={selectedCategory?.toString()} 
+                onValueChange={(value) => setSelectedCategory(Number(value))}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {expenseCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </CardHeader>
             <CardContent>
               <SubCategoryChart 
