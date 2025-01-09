@@ -20,6 +20,8 @@ interface BankSelectProps {
   control: Control<TransactionFormData>;
 }
 
+const NO_BANK = 'no_bank';
+
 export function BankSelect({ control }: BankSelectProps) {
   const { banks, loading } = useBanks();
 
@@ -29,11 +31,11 @@ export function BankSelect({ control }: BankSelectProps) {
       name="bankId"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Bank*</FormLabel>
+          <FormLabel>Bank</FormLabel>
           <Select
             disabled={loading}
-            onValueChange={field.onChange}
-            value={field.value}
+            onValueChange={(value) => field.onChange(value === NO_BANK ? undefined : value)}
+            value={field.value || NO_BANK}
           >
             <FormControl>
               <SelectTrigger>
@@ -41,6 +43,7 @@ export function BankSelect({ control }: BankSelectProps) {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
+              <SelectItem value={NO_BANK}>None</SelectItem>
               {banks.map((bank) => (
                 <SelectItem key={bank.id} value={bank.id}>
                   {bank.name}
