@@ -11,7 +11,7 @@ import { SettingsLayout } from './pages/settings/layout';
 import { SettingsPage } from './pages/settings';
 import { ExpenseCategoriesPage } from './pages/settings/expense-categories';
 import { TagsPage } from './pages/settings/tags';
-import { TestTablePage } from './pages/test-table';
+import { AnalyticsPage } from './pages/analytics';
 import { Toaster } from './components/ui/toaster';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -41,15 +41,13 @@ function AppRoutes() {
       <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
       <Route path="/transactions/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
       <Route path="/transactions/import/:bankId" element={<ProtectedRoute><ImportBankPage /></ProtectedRoute>} />
+      <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
       
       <Route path="/settings" element={<ProtectedRoute><SettingsLayout /></ProtectedRoute>}>
         <Route index element={<SettingsPage />} />
         <Route path="expense-categories" element={<ExpenseCategoriesPage />} />
         <Route path="tags" element={<TagsPage />} />
       </Route>
-
-      {/* Test route for table styling */}
-      <Route path="/test-table" element={<TestTablePage />} />
     </Routes>
   );
 }

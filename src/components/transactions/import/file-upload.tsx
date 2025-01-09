@@ -27,8 +27,8 @@ export function FileUpload({ onUpload, loading, selectedFile }: FileUploadProps)
         const fileExtension = file.name.split('.').pop()?.toLowerCase();
         
         // Validate file type
-        if (!fileExtension || !['csv', 'xlsx'].includes(fileExtension)) {
-          setError('Please upload a CSV or XLSX file');
+        if (!fileExtension || fileExtension !== 'csv') {
+          setError('Please upload a CSV file');
           return;
         }
 
@@ -43,8 +43,7 @@ export function FileUpload({ onUpload, loading, selectedFile }: FileUploadProps)
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'text/csv': ['.csv'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
+      'text/csv': ['.csv']
     },
     maxFiles: 1,
     disabled: loading,
@@ -88,7 +87,7 @@ export function FileUpload({ onUpload, loading, selectedFile }: FileUploadProps)
                   : 'Drag and drop your file here, or click to select'}
               </p>
               <p className="text-xs text-muted-foreground">
-                Supported formats: CSV, XLSX
+                Supported format: CSV
               </p>
             </>
           )}

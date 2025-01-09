@@ -1,4 +1,4 @@
-import { Bell, ChevronDown, User } from 'lucide-react';
+import { Bell, ChevronDown, User, BarChart2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import {
@@ -70,6 +70,22 @@ export function TopNav() {
                   )}
                 >
                   <Link to="/transactions">Transactions</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  asChild
+                  className={cn(
+                    "inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium",
+                    isPathActive('/analytics')
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <Link to="/analytics">
+                    <BarChart2 className="mr-2 h-4 w-4 inline-block" />
+                    Analytics
+                  </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>

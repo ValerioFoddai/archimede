@@ -1,5 +1,4 @@
 import { parse } from 'papaparse';
-import { read, utils } from 'xlsx';
 import { parse as parseDate, isValid } from 'date-fns';
 import { ImportConfig, TransactionImport } from '../../types/import';
 
@@ -79,49 +78,6 @@ async function parseCSV(file: File): Promise<Record<string, string>[]> {
   });
 }
 
-async function parseXLSX(file: File): Promise<Record<string, string>[]> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        const workbook = read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        // Get headers and data separately
-        const headers = utils.sheet_to_json<string[]>(firstSheet, { 
-          header: 1,
-          raw: false,
-          defval: '',
-          range: 0
-        })[0];
-
-        if (!headers || headers.length === 0) {
-          reject(new Error('No headers found in file'));
-          return;
-        }
-
-        // Get data rows
-        const jsonData = utils.sheet_to_json<Record<string, string>>(firstSheet, {
-          header: headers,
-          raw: false,
-          defval: ''
-        });
-
-        if (jsonData.length === 0) {
-          reject(new Error('No data found in file'));
-          return;
-        }
-
-        resolve(jsonData);
-      } catch (error) {
-        reject(new Error(`Failed to parse XLSX: ${error instanceof Error ? error.message : 'Unknown error'}`));
-      }
-    };
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsArrayBuffer(file);
-  });
-}
-
 export async function parseImportFile(
   file: File,
   config: ImportConfig
@@ -129,16 +85,13 @@ export async function parseImportFile(
   try {
     if (!file) throw new Error('No file provided');
 
-    // Parse file based on type
-    const rows = file.name.toLowerCase().endsWith('.xlsx') 
-      ? await parseXLSX(file)
-      : await parseCSV(file);
+    // Parse CSV file
+    const rows = await parseCSV(file);
 
     return rows.map((row, index) => {
       try {
         return transformRow(row, config);
       } catch (error) {
-        console.error('Error transforming row:', error, { row, config });
         return {
           date: new Date(),
           merchant: row[config.columnMappings.merchant] || '',
@@ -159,7 +112,7 @@ function transformRow(
   config: ImportConfig
 ): TransactionImport {
   try {
-    // Get date - try multiple date columns if primary is empty
+    // Get date
     const dateColumn = config.columnMappings.date;
     if (!dateColumn) throw new Error('Date column not mapped');
     

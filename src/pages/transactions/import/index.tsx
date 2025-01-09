@@ -1,5 +1,4 @@
-import { useState, useCallback } from 'react';
-import { read, utils } from 'xlsx';
+import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DashboardLayout } from '../../../components/layout/dashboard-layout';
 import { FileUpload } from '../../../components/transactions/import/file-upload';
@@ -41,6 +40,40 @@ interface ColumnMapping {
   id: string;
   sourceColumn: string;
   targetField: string;
+}
+
+// Helper function to guess target field based on column name
+function guessTargetField(columnName: string): string {
+  const normalized = columnName.toLowerCase();
+  
+  if (normalized.includes('date') || normalized.includes('data')) return 'date';
+  if (normalized.includes('merchant') || normalized.includes('nome')) return 'merchant';
+  if (normalized.includes('amount') || normalized.includes('importo')) return 'amount';
+  if (normalized.includes('note') || normalized.includes('description')) return 'notes';
+  
+  return SKIP_COLUMN;
+}
+
+// Helper function to get file columns
+async function getFileColumns(file: File): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const firstLine = content.split('\n')[0];
+        const columns = firstLine.split(',').map(col => col.trim().replace(/^["']|["']$/g, ''));
+        if (!columns || columns.length === 0) {
+          throw new Error('No headers found in file');
+        }
+        resolve(columns);
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error('Failed to read file headers'));
+      }
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsText(file);
+  });
 }
 
 export function ImportPage() {
@@ -279,65 +312,4 @@ export function ImportPage() {
       </div>
     </DashboardLayout>
   );
-}
-
-// Helper function to guess target field based on column name
-function guessTargetField(columnName: string): string {
-  const normalized = columnName.toLowerCase();
-  
-  if (normalized.includes('date') || normalized.includes('data')) return 'date';
-  if (normalized.includes('merchant') || normalized.includes('nome')) return 'merchant';
-  if (normalized.includes('amount') || normalized.includes('importo')) return 'amount';
-  if (normalized.includes('note') || normalized.includes('description')) return 'notes';
-  
-  return SKIP_COLUMN;
-}
-
-// Helper function to get file columns
-async function getFileColumns(file: File): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    if (file.name.toLowerCase().endsWith('.xlsx')) {
-      reader.onload = (e) => {
-        try {
-          const data = e.target?.result;
-          const workbook = read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const headers = utils.sheet_to_json<string[]>(firstSheet, { 
-            header: 1,
-            raw: false,
-            defval: '',
-            range: 0
-          })[0];
-          
-          if (!headers || headers.length === 0) {
-            throw new Error('No headers found in file');
-          }
-          
-          resolve(headers);
-        } catch (error) {
-          reject(error instanceof Error ? error : new Error('Failed to read file headers'));
-        }
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsArrayBuffer(file);
-    } else {
-      // For CSV files
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const firstLine = content.split('\n')[0];
-          const columns = firstLine.split(',').map(col => col.trim().replace(/^["']|["']$/g, ''));
-          if (!columns || columns.length === 0) {
-            throw new Error('No headers found in file');
-          }
-          resolve(columns);
-        } catch (error) {
-          reject(error instanceof Error ? error : new Error('Failed to read file headers'));
-        }
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsText(file);
-    }
-  });
 }
