@@ -16,13 +16,11 @@ export function useBudgets(selectedDate?: string) {
     try {
       setLoading(true);
       
-      // Get budgets for the selected month and recurring budgets from previous months
       // Create dates in UTC to avoid timezone issues
       const startOfMonth = date 
         ? new Date(Date.UTC(parseInt(date.split('-')[0]), parseInt(date.split('-')[1]) - 1, 1))
         : new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), 1));
 
-      // Get both recurring budgets and budgets specific to the selected month
       const endOfMonth = new Date(Date.UTC(startOfMonth.getUTCFullYear(), startOfMonth.getUTCMonth() + 1, 1));
 
       // Get all budgets for this user

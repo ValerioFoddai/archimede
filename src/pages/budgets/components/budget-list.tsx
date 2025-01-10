@@ -93,9 +93,6 @@ export function BudgetList({ budgets, loading, onEdit, onDelete }: BudgetListPro
                     {budget.endDate && (
                       <div>To: {format(budget.endDate, 'MMM d, yyyy')}</div>
                     )}
-                    {budget.recurring && (
-                      <div className="text-sm text-muted-foreground">Recurring</div>
-                    )}
                   </div>
                 </TableCell>
                 <TableCell>
