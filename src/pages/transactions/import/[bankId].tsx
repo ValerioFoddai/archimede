@@ -15,7 +15,7 @@ export function ImportBankPage() {
   const { bankId } = useParams();
   const navigate = useNavigate();
   const { banks } = useBanks();
-  const { processFile, importTransactions, loading, error } = useImport(bankId!);
+  const { processFile, importTransactions, loading, error } = useImport();
   const [transactions, setTransactions] = useState<TransactionImport[]>([]);
   const [importComplete, setImportComplete] = useState(false);
 
@@ -32,7 +32,15 @@ export function ImportBankPage() {
   }
 
   const handleFileUpload = async (file: File) => {
-    const result = await processFile(file);
+    const config = {
+      columnMappings: {
+        date: 'Data operazione',
+        description: 'Descrizione',
+        amount: 'Importo'
+      },
+      dateFormat: 'DD/MM/YYYY'
+    };
+    const result = await processFile(file, config);
     setTransactions(result);
   };
 
@@ -67,7 +75,6 @@ export function ImportBankPage() {
           <FileUpload
             onUpload={handleFileUpload}
             loading={loading}
-            accept=".csv"
           />
         )}
 

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
-import { X, ChevronsUpDown, Check } from 'lucide-react';
+import { ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTags } from '@/hooks/useTags';
 import type { TransactionFormData } from '@/types/transactions';
@@ -20,7 +20,7 @@ interface TagSelectProps {
 }
 
 export function TagSelect({ control }: TagSelectProps) {
-  const { tags, loading } = useTags();
+  const { tags } = useTags();
 
   return (
     <FormField
@@ -40,7 +40,7 @@ export function TagSelect({ control }: TagSelectProps) {
                     !field.value?.length && "text-muted-foreground"
                   )}
                 >
-                  {field.value?.length > 0 ? (
+                  {field.value && field.value.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {field.value.map((tagId) => {
                         const tag = tags.find((t) => t.id === tagId);
@@ -74,7 +74,7 @@ export function TagSelect({ control }: TagSelectProps) {
                         key={tag.id}
                         onSelect={() => {
                           const newValue = isSelected
-                            ? field.value?.filter((id) => id !== tag.id)
+                            ? (field.value || []).filter((id) => id !== tag.id)
                             : [...(field.value || []), tag.id];
                           field.onChange(newValue);
                         }}
