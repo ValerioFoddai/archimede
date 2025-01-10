@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
+import { EventEmitterContext, eventEmitter } from './lib/events';
 import { SignUpForm } from './components/auth/signup-form';
 import { LoginForm } from './components/auth/login-form';
 import { ForgotPasswordForm } from './components/auth/forgot-password-form';
@@ -62,8 +63,10 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppRoutes />
-        <Toaster />
+        <EventEmitterContext.Provider value={eventEmitter}>
+          <AppRoutes />
+          <Toaster />
+        </EventEmitterContext.Provider>
       </AuthProvider>
     </Router>
   );

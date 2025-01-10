@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from "../../components/layout/dashboard-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { 
@@ -14,6 +14,7 @@ import { CashFlowChart } from './components/cash-flow-chart';
 import { SummaryStats } from './components/summary-stats';
 import { TimeFilter } from './components/time-filter';
 import { useTransactions } from '../../hooks/useTransactions';
+import { useEventEmitter, TRANSACTION_UPDATED } from '@/lib/events';
 import { useExpenseCategories } from '../../hooks/useExpenseCategories';
 
 // Format: month-YYYY-MM (e.g., month-2024-03 for March 2024)
@@ -26,7 +27,17 @@ export type TimeRange =
 export function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
   const [selectedCategory, setSelectedCategory] = useState<number>();
-  const { transactions } = useTransactions();
+  const { transactions, refresh: refreshTransactions } = useTransactions();
+  const eventEmitter = useEventEmitter();
+
+  // Listen for transaction updates
+  useEffect(() => {
+    const cleanup = eventEmitter.on(TRANSACTION_UPDATED, () => {
+      refreshTransactions();
+    });
+
+    return cleanup;
+  }, [eventEmitter, refreshTransactions]);
   const { categories } = useExpenseCategories();
 
   // Filter out income category and get only expense categories
