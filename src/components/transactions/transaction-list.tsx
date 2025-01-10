@@ -158,7 +158,10 @@ export function TransactionList({
                   )}
                   <TableCell>{transaction.merchant}</TableCell>
                   <TableCell className="text-right">
-                    {formatDisplayAmount(transaction.amount)}
+                    {(() => {
+                      const { text, className } = formatDisplayAmount(transaction.amount);
+                      return <span className={className}>{text}</span>;
+                    })()}
                   </TableCell>
                   {columnVisibility.category && (
                     <TableCell>
