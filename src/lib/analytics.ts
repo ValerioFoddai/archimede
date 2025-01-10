@@ -1,6 +1,12 @@
-import { subDays, subMonths, startOfYear, isAfter } from 'date-fns';
-import type { Transaction } from '@/types/transactions';
-import type { TimeRange } from '@/pages/analytics';
+import { 
+  subDays, 
+  startOfMonth, 
+  endOfMonth,
+  isAfter,
+  isBefore
+} from 'date-fns';
+import type { Transaction } from '../types/transactions';
+import type { TimeRange } from '../pages/analytics';
 
 export function filterTransactionsByTimeRange(
   transactions: Transaction[],
@@ -8,32 +14,25 @@ export function filterTransactionsByTimeRange(
 ): Transaction[] {
   const now = new Date();
   let startDate: Date;
+  let endDate: Date | undefined;
 
-  switch (timeRange) {
-    case '7d':
-      startDate = subDays(now, 7);
-      break;
-    case '30d':
-      startDate = subDays(now, 30);
-      break;
-    case '3m':
-      startDate = subMonths(now, 3);
-      break;
-    case '6m':
-      startDate = subMonths(now, 6);
-      break;
-    case 'ytd':
-      startDate = startOfYear(now);
-      break;
-    case 'custom':
-      // For now, default to last 30 days
-      startDate = subDays(now, 30);
-      break;
-    default:
-      startDate = subDays(now, 30);
+  if (timeRange === '7d') {
+    startDate = subDays(now, 7);
+  } else if (timeRange.startsWith('month-')) {
+    // Parse month range (format: month-YYYY-MM)
+    const [, year, month] = timeRange.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    startDate = startOfMonth(date);
+    endDate = endOfMonth(date);
+  } else {
+    // Default to last 7 days if unknown time range
+    startDate = subDays(now, 7);
   }
 
-  return transactions.filter(transaction => 
-    isAfter(transaction.date, startDate)
-  );
+  return transactions.filter(transaction => {
+    const transactionDate = new Date(transaction.date);
+    const isAfterStart = isAfter(transactionDate, startDate) || transactionDate.getTime() === startDate.getTime();
+    const isBeforeEnd = endDate ? isBefore(transactionDate, endDate) || transactionDate.getTime() === endDate.getTime() : true;
+    return isAfterStart && isBeforeEnd;
+  });
 }

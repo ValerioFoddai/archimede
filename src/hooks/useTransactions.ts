@@ -1,9 +1,28 @@
 import { useState, useEffect } from 'react';
 import { PostgrestError } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/auth';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/auth';
 import { useToast } from './useToast';
-import type { TransactionFormData, Transaction } from '@/types/transactions';
+import { format } from 'date-fns';
+import type { TransactionFormData, Transaction } from '../types/transactions';
+
+interface TransactionTag {
+  tag_id: string;  // Changed to string to match Transaction interface
+}
+
+interface RawTransaction {
+  id: string;
+  bank_id: string | null;
+  date: string;
+  merchant: string;
+  amount: number;
+  main_category_id: number | null;
+  sub_category_id: number | null;
+  notes: string | null;
+  user_id: string;
+  created_at: string;
+  transaction_tags: TransactionTag[];
+}
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -29,16 +48,16 @@ export function useTransactions() {
 
       if (error) throw error;
 
-      const transformedData = data.map(transaction => ({
+      const transformedData = (data as RawTransaction[]).map(transaction => ({
         id: transaction.id,
         bankId: transaction.bank_id || undefined,
         date: new Date(transaction.date),
         merchant: transaction.merchant,
         amount: transaction.amount,
-        mainCategoryId: transaction.main_category_id,
-        subCategoryId: transaction.sub_category_id,
+        mainCategoryId: transaction.main_category_id || undefined,
+        subCategoryId: transaction.sub_category_id || undefined,
         tagIds: transaction.transaction_tags.map(tt => tt.tag_id),
-        notes: transaction.notes,
+        notes: transaction.notes || undefined,
         userId: transaction.user_id,
         createdAt: transaction.created_at,
       }));
@@ -61,10 +80,13 @@ export function useTransactions() {
 
     try {
       setLoading(true);
+      // Format date as YYYY-MM-DD to preserve local date
+      const formattedDate = format(data.date, 'yyyy-MM-dd');
+      
       const transactionData = {
         user_id: user.id,
         bank_id: data.bankId || null,
-        date: data.date.toISOString(),
+        date: formattedDate,
         merchant: data.merchant,
         amount: parseFloat(data.amount),
         main_category_id: data.mainCategoryId || null,
@@ -118,9 +140,12 @@ export function useTransactions() {
 
     try {
       setLoading(true);
+      // Format date as YYYY-MM-DD to preserve local date
+      const formattedDate = format(data.date, 'yyyy-MM-dd');
+      
       const transactionData = {
         bank_id: data.bankId || null,
-        date: data.date.toISOString(),
+        date: formattedDate,
         merchant: data.merchant,
         amount: parseFloat(data.amount),
         main_category_id: data.mainCategoryId || null,
