@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export async function checkSupabaseConnection() {
   try {
-    const { data, error } = await supabase.from('user_tags').select('count');
+    const { error } = await supabase.from('user_tags').select('count');
     if (error) {
       console.error('❌ Supabase connection failed:', {
         message: error.message,

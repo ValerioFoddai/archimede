@@ -1,5 +1,4 @@
 import { Toast, ToastAction } from "@/components/ui/toast";
-import { useToast } from "@/hooks/useToast";
 import { Tag } from "@/types/tags";
 
 interface TagToastProps {
@@ -10,8 +9,6 @@ interface TagToastProps {
 }
 
 export function TagToast({ action, tag, previousTag, onUndo }: TagToastProps) {
-  const { toast } = useToast();
-
   const getToastContent = () => {
     switch (action) {
       case 'create':

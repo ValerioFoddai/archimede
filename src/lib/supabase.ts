@@ -19,7 +19,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 // Add connection check utility
 export async function checkSupabaseConnection() {
   try {
-    const { data, error } = await supabase.from('user_tags').select('count');
+    const { error } = await supabase.from('user_tags').select('count');
     if (error) throw error;
     console.info('✅ Supabase connection successful');
     return true;

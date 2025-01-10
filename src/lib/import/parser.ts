@@ -88,7 +88,7 @@ export async function parseImportFile(
     // Parse CSV file
     const rows = await parseCSV(file);
 
-    return rows.map((row, index) => {
+    return rows.map((row) => {
       try {
         return transformRow(row, config);
       } catch (error) {

@@ -73,9 +73,6 @@ export function BudgetsPage() {
     setEditValue('');
   };
 
-  // Parse selected month
-  const [year, month] = selectedMonth.split('-').map(Number);
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
