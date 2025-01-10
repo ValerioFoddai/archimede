@@ -17,10 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { loginSchema, type LoginFormData } from '@/lib/validations/auth';
-import { supabase } from '@/lib/supabase';
 import { AuthCard } from './auth-card';
-import { AuthDivider } from './auth-divider';
-import { SocialButton } from './social-button';
 
 export function LoginForm() {
   const { signIn } = useAuth();

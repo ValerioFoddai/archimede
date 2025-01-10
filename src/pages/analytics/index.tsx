@@ -26,7 +26,7 @@ export type TimeRange =
 export function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
   const [selectedCategory, setSelectedCategory] = useState<number>();
-  const { transactions, loading } = useTransactions();
+  const { transactions } = useTransactions();
   const { categories } = useExpenseCategories();
 
   // Filter out income category and get only expense categories

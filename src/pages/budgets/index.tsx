@@ -39,7 +39,7 @@ const monthOptions = Array.from({ length: 12 }, (_, i) => {
 
 export function BudgetsPage() {
   const { categories } = useExpenseCategories();
-  const { budgets, loading, createBudget, updateBudget } = useBudgets();
+  const { budgets, createBudget, updateBudget } = useBudgets();
   const [editingCategory, setEditingCategory] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(monthOptions[0].value);
@@ -75,7 +75,6 @@ export function BudgetsPage() {
 
   // Parse selected month
   const [year, month] = selectedMonth.split('-').map(Number);
-  const selectedDate = new Date(year, month - 1);
 
   return (
     <DashboardLayout>
