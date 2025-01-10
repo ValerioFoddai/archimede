@@ -7,20 +7,26 @@ export const budgetSchema = z.object({
   amount: z.string().min(1, 'Amount is required').regex(/^\d+(\.\d{0,2})?$/, {
     message: 'Please enter a valid amount',
   }),
-  recurring: z.boolean().default(true),
   startDate: z.date({
     required_error: 'Please select a start date',
   }),
-  endDate: z.date().optional(),
 });
 
 export type BudgetFormData = z.infer<typeof budgetSchema>;
+
+export interface DbBudget {
+  id: string;
+  user_id: string;
+  main_category_id: number;
+  amount: number;
+  start_date: string;
+  end_date?: string;
+}
 
 export interface Budget {
   id: string;
   mainCategoryId: number;
   amount: number;
-  recurring: boolean;
   startDate: Date;
   endDate?: Date;
   spent: number;

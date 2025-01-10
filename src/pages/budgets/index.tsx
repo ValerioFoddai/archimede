@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { DashboardLayout } from '../../components/layout/dashboard-layout';
 import { Button } from '../../components/ui/button';
@@ -22,6 +22,8 @@ import {
 import { useExpenseCategories } from '../../hooks/useExpenseCategories';
 import { useBudgets } from '../../hooks/useBudgets';
 import { formatDisplayAmount, formatInputAmount } from '../../lib/format';
+import type { Budget } from '@/types/budgets';
+import { useEventEmitter, TRANSACTION_UPDATED } from '@/lib/events';
 
 // Get current month and year
 const currentDate = new Date();
@@ -39,30 +41,51 @@ const monthOptions = Array.from({ length: 12 }, (_, i) => {
 
 export function BudgetsPage() {
   const { categories } = useExpenseCategories();
-  const { budgets, createBudget, updateBudget } = useBudgets();
+  const [selectedMonth, setSelectedMonth] = useState(monthOptions[0].value);
+  const { budgets, createBudget, updateBudget, refresh: refreshBudgets } = useBudgets(selectedMonth);
+  const eventEmitter = useEventEmitter();
+
+  // Listen for transaction updates
+  useEffect(() => {
+    const cleanup = eventEmitter.on(TRANSACTION_UPDATED, () => {
+      refreshBudgets();
+    });
+
+    return cleanup;
+  }, [eventEmitter, refreshBudgets]);
   const [editingCategory, setEditingCategory] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState(monthOptions[0].value);
 
   // Filter out income category and get only expense categories
   const expenseCategories = categories.filter(c => c.id !== 1);
 
-  const handleStartEdit = (categoryId: number, currentAmount?: number) => {
+  // Parse selected month into a date
+  const [year, month] = selectedMonth.split('-').map(Number);
+  // Create date in UTC to avoid timezone issues
+  const selectedDate = new Date(Date.UTC(year, month - 1, 1)); // month is 0-based in Date constructor
+
+  const handleStartEdit = (categoryId: number, budget?: { amount?: number }) => {
     setEditingCategory(categoryId);
-    setEditValue(currentAmount?.toString() || '');
+    setEditValue(budget?.amount?.toString() || '');
   };
 
   const handleSaveBudget = async (categoryId: number) => {
     if (!editValue) return;
 
-    const existingBudget = budgets.find(b => b.mainCategoryId === categoryId);
     const budgetData = {
       mainCategoryId: categoryId,
       amount: editValue,
-      recurring: true,
-      startDate: new Date(),
+      startDate: selectedDate,
     };
 
+    console.log('Creating budget for:', {
+      selectedMonth,
+      year,
+      month,
+      selectedDate: selectedDate.toISOString(),
+    });
+
+    const existingBudget = budgets.find(b => b.mainCategoryId === categoryId);
     if (existingBudget) {
       await updateBudget(existingBudget.id, budgetData);
     } else {
@@ -110,7 +133,7 @@ export function BudgetsPage() {
             </TableHeader>
             <TableBody>
               {expenseCategories.map((category) => {
-                const budget = budgets.find(b => b.mainCategoryId === category.id);
+                const budget = budgets.find((b: Budget) => b.mainCategoryId === category.id);
                 
                 // Filter spending for selected month
                 const monthlySpent = budget?.spent || 0;
@@ -175,25 +198,29 @@ export function BudgetsPage() {
                     <TableCell>
                       {editingCategory === category.id ? (
                         <div className="space-x-2">
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleSaveBudget(category.id)}
-                          >
-                            Save
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setEditingCategory(null)}
-                          >
-                            Cancel
-                          </Button>
+                          <div className="flex items-center gap-4">
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleSaveBudget(category.id)}
+                            >
+                              Save
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setEditingCategory(null);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
                       ) : (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleStartEdit(category.id, budget?.amount)}
+                          onClick={() => handleStartEdit(category.id, budget ? { amount: budget.amount } : undefined)}
                         >
                           {budget ? 'Edit' : 'Set Budget'}
                         </Button>

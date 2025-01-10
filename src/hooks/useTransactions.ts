@@ -3,6 +3,7 @@ import { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { useToast } from './useToast';
+import { eventEmitter, TRANSACTION_UPDATED } from '@/lib/events';
 import { format } from 'date-fns';
 import type { TransactionFormData, Transaction } from '../types/transactions';
 
@@ -121,6 +122,7 @@ export function useTransactions() {
       });
 
       await fetchTransactions();
+      eventEmitter.emit(TRANSACTION_UPDATED);
       return transaction;
     } catch (error) {
       const pgError = error as PostgrestError;
@@ -187,6 +189,7 @@ export function useTransactions() {
       });
 
       await fetchTransactions();
+      eventEmitter.emit(TRANSACTION_UPDATED);
       return transactions.find(t => t.id === id) || null;
     } catch (error) {
       const pgError = error as PostgrestError;
@@ -220,6 +223,7 @@ export function useTransactions() {
       });
 
       await fetchTransactions();
+      eventEmitter.emit(TRANSACTION_UPDATED);
       return true;
     } catch (error) {
       const pgError = error as PostgrestError;

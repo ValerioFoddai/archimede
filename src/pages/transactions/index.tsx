@@ -28,7 +28,7 @@ export function TransactionsPage() {
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({
-    bank: true,
+    bank: false,
     category: true,
     tags: true,
     notes: true,
