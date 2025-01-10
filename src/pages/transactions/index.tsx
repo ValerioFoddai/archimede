@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Upload } from 'lucide-react';
+import { Plus, Upload, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { TransactionList } from '@/components/transactions/transaction-list';
@@ -20,11 +20,12 @@ import { useTransactions } from '@/hooks/useTransactions';
 import type { Transaction, TransactionFormData, ColumnVisibility } from '@/types/transactions';
 
 export function TransactionsPage() {
-  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction } = useTransactions();
+  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules } = useTransactions();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [isAutoRulesDialogOpen, setIsAutoRulesDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({
@@ -101,6 +102,9 @@ export function TransactionsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" onClick={() => setIsAutoRulesDialogOpen(true)}>
+              <Bot className="h-4 w-4" />
+            </Button>
             <Button variant="outline" size="icon" asChild>
               <Link to="/transactions/import">
                 <Upload className="h-4 w-4" />
@@ -179,6 +183,28 @@ export function TransactionsPage() {
               </AlertDialogCancel>
               <AlertDialogAction onClick={handleBulkDeleteConfirm}>
                 Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={isAutoRulesDialogOpen} onOpenChange={setIsAutoRulesDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Apply Transaction Rules</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will automatically categorize your transactions based on the rules you've created. Would you like to proceed?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setIsAutoRulesDialogOpen(false)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={async () => {
+                await applyTransactionRules();
+                setIsAutoRulesDialogOpen(false);
+              }}>
+                Apply Rules
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

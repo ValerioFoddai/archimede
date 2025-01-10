@@ -12,6 +12,7 @@ import { SettingsLayout } from './pages/settings/layout';
 import { SettingsPage } from './pages/settings';
 import { ExpenseCategoriesPage } from './pages/settings/expense-categories';
 import { TagsPage } from './pages/settings/tags';
+import TransactionRulesPage from './pages/settings/transaction-rules';
 import { TestTablePage } from './pages/test-table';
 import { AnalyticsPage } from './pages/analytics';
 import { BudgetsPage } from './pages/budgets';
@@ -50,6 +51,7 @@ function AppRoutes() {
       <Route path="/settings" element={<ProtectedRoute><SettingsLayout /></ProtectedRoute>}>
         <Route index element={<SettingsPage />} />
         <Route path="expense-categories" element={<ExpenseCategoriesPage />} />
+        <Route path="transaction-rules" element={<TransactionRulesPage />} />
         <Route path="tags" element={<TagsPage />} />
       </Route>
 
