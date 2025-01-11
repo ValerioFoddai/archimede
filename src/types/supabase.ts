@@ -43,6 +43,35 @@ export interface Database {
           tag_id?: string
         }
       }
+      user_transactions_rules: {
+        Row: {
+          id: string
+          user_id: string
+          keywords: string
+          main_category: string
+          sub_category: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          keywords: string
+          main_category: string
+          sub_category: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          keywords?: string
+          main_category?: string
+          sub_category?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }

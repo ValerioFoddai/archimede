@@ -1,6 +1,8 @@
-export function formatDisplayAmount(amount: number): string {
+export function formatDisplayAmount(amount: number): { text: string; className: string } {
   const formattedAmount = amount.toFixed(2);
-  return `${formattedAmount} €`;
+  const text = `${formattedAmount} €`;
+  const className = amount >= 0 ? 'text-green-600 dark:text-green-500' : '';
+  return { text, className };
 }
 
 export function formatInputAmount(value: string): string | null {

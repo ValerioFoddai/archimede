@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { MoreHorizontal, Pencil, Trash2, Settings2 } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -14,7 +14,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -71,42 +70,6 @@ export function TransactionList({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Settings2 className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuCheckboxItem
-              checked={columnVisibility.bank}
-              onCheckedChange={(checked) => onColumnVisibilityChange({ bank: checked })}
-            >
-              Bank
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={columnVisibility.category}
-              onCheckedChange={(checked) => onColumnVisibilityChange({ category: checked })}
-            >
-              Category
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={columnVisibility.tags}
-              onCheckedChange={(checked) => onColumnVisibilityChange({ tags: checked })}
-            >
-              Tags
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={columnVisibility.notes}
-              onCheckedChange={(checked) => onColumnVisibilityChange({ notes: checked })}
-            >
-              Notes
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       <div className="border rounded-md">
         <Table>
           <TableHeader>
@@ -158,7 +121,10 @@ export function TransactionList({
                   )}
                   <TableCell>{transaction.merchant}</TableCell>
                   <TableCell className="text-right">
-                    {formatDisplayAmount(transaction.amount)}
+                    {(() => {
+                      const { text, className } = formatDisplayAmount(transaction.amount);
+                      return <span className={className}>{text}</span>;
+                    })()}
                   </TableCell>
                   {columnVisibility.category && (
                     <TableCell>

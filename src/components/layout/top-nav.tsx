@@ -36,7 +36,7 @@ export function TopNav() {
   };
 
   return (
-    <div className="border-b">
+    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center space-x-8">
           <Link to="/dashboard" className="text-xl font-bold">

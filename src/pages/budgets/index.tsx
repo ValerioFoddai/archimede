@@ -40,10 +40,13 @@ const monthOptions = Array.from({ length: 12 }, (_, i) => {
 });
 
 export function BudgetsPage() {
-  const { categories } = useExpenseCategories();
+  // All hooks at the top
+  const { categories, loading: categoriesLoading } = useExpenseCategories();
   const [selectedMonth, setSelectedMonth] = useState(monthOptions[0].value);
-  const { budgets, createBudget, updateBudget, refresh: refreshBudgets } = useBudgets(selectedMonth);
+  const { budgets, loading: budgetsLoading, createBudget, updateBudget, refresh: refreshBudgets } = useBudgets(selectedMonth);
   const eventEmitter = useEventEmitter();
+  const [editingCategory, setEditingCategory] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState('');
 
   // Listen for transaction updates
   useEffect(() => {
@@ -53,13 +56,24 @@ export function BudgetsPage() {
 
     return cleanup;
   }, [eventEmitter, refreshBudgets]);
-  const [editingCategory, setEditingCategory] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState('');
 
-  // Filter out income category and get only expense categories
-  const expenseCategories = categories.filter(c => c.id !== 1);
+  const loading = categoriesLoading || budgetsLoading;
+  
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+          <div className="text-center space-y-2">
+            <div className="text-lg font-medium">Loading budgets...</div>
+            <div className="text-sm text-muted-foreground">Please wait while we fetch your data</div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-  // Parse selected month into a date
+  // Derived state (not hooks)
+  const expenseCategories = categories?.filter(c => c.id !== 1) ?? [];
   const [year, month] = selectedMonth.split('-').map(Number);
   // Create date in UTC to avoid timezone issues
   const selectedDate = new Date(Date.UTC(year, month - 1, 1)); // month is 0-based in Date constructor
@@ -175,11 +189,21 @@ export function BudgetsPage() {
                           <span className="absolute right-3 top-1/2 -translate-y-1/2">€</span>
                         </div>
                       ) : (
-                        budget?.amount ? formatDisplayAmount(budget.amount) : '-'
+                        budget?.amount ? (
+                          (() => {
+                            const { text } = formatDisplayAmount(budget.amount);
+                            return text;
+                          })()
+                        ) : '-'
                       )}
                     </TableCell>
                     <TableCell>
-                      {budget ? formatDisplayAmount(monthlySpent) : '-'}
+                      {budget ? (
+                        (() => {
+                          const { text } = formatDisplayAmount(monthlySpent);
+                          return text;
+                        })()
+                      ) : '-'}
                     </TableCell>
                     <TableCell>
                       {budget && (
