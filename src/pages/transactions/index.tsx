@@ -18,10 +18,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { TransactionForm } from '@/components/transactions/transaction-form';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useTransactionRules } from '@/hooks/useTransactionRules';
 import type { Transaction, TransactionFormData, ColumnVisibility } from '@/types/transactions';
 
 export function TransactionsPage() {
   const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules } = useTransactions();
+  const { rules } = useTransactionRules();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isApplyingRules, setIsApplyingRules] = useState(false);
@@ -202,34 +204,46 @@ export function TransactionsPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Apply Transaction Rules</AlertDialogTitle>
               <AlertDialogDescription>
-                This will automatically categorize your transactions based on the rules you've created. Would you like to proceed?
+                {rules.length === 0 ? (
+                  <>
+                    No transaction rules found. Please create rules in the{' '}
+                    <Link to="/settings/transaction-rules" className="text-primary hover:underline" onClick={() => setIsAutoRulesDialogOpen(false)}>
+                      Transaction Rules
+                    </Link>{' '}
+                    section before using this feature.
+                  </>
+                ) : (
+                  'This will automatically categorize your transactions based on the rules you\'ve created. Would you like to proceed?'
+                )}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setIsAutoRulesDialogOpen(false)}>
                 Cancel
               </AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={async () => {
-                  setIsApplyingRules(true);
-                  try {
-                    await applyTransactionRules();
-                    setIsAutoRulesDialogOpen(false);
-                  } finally {
-                    setIsApplyingRules(false);
-                  }
-                }}
-                disabled={isApplyingRules}
-              >
-                {isApplyingRules ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Applying Rules...
-                  </>
-                ) : (
-                  'Apply Rules'
-                )}
-              </AlertDialogAction>
+              {rules.length > 0 && (
+                <AlertDialogAction 
+                  onClick={async () => {
+                    setIsApplyingRules(true);
+                    try {
+                      await applyTransactionRules();
+                      setIsAutoRulesDialogOpen(false);
+                    } finally {
+                      setIsApplyingRules(false);
+                    }
+                  }}
+                  disabled={isApplyingRules}
+                >
+                  {isApplyingRules ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Applying Rules...
+                    </>
+                  ) : (
+                    'Apply Rules'
+                  )}
+                </AlertDialogAction>
+              )}
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
