@@ -7,7 +7,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <Analytics />
       <div className="fixed top-0 left-0 right-0 z-50 bg-background">
         <TopNav />
@@ -15,6 +15,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <main className="overflow-y-auto p-6 mt-16">
         {children}
       </main>
-    </div>
+    </>
   );
 }

@@ -27,8 +27,10 @@ export type TimeRange =
 export function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
   const [selectedCategory, setSelectedCategory] = useState<number>();
-  const { transactions, refresh: refreshTransactions } = useTransactions();
+  const { transactions, loading: transactionsLoading, refresh: refreshTransactions } = useTransactions();
+  const { categories, loading: categoriesLoading } = useExpenseCategories();
   const eventEmitter = useEventEmitter();
+  const loading = transactionsLoading || categoriesLoading;
 
   // Listen for transaction updates
   useEffect(() => {
@@ -38,10 +40,22 @@ export function AnalyticsPage() {
 
     return cleanup;
   }, [eventEmitter, refreshTransactions]);
-  const { categories } = useExpenseCategories();
 
   // Filter out income category and get only expense categories
-  const expenseCategories = categories.filter(c => c.id !== 1);
+  const expenseCategories = categories?.filter(c => c.id !== 1) ?? [];
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+          <div className="text-center space-y-2">
+            <div className="text-lg font-medium">Loading analytics...</div>
+            <div className="text-sm text-muted-foreground">Please wait while we fetch your data</div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>

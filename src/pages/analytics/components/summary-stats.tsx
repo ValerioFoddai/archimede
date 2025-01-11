@@ -34,7 +34,12 @@ export function SummaryStats({ transactions, timeRange }: SummaryStatsProps) {
           <CardTitle className="text-sm font-medium">Total Spending</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatDisplayAmount(totalSpending)}</div>
+          <div className="text-2xl font-bold">
+            {(() => {
+              const { text } = formatDisplayAmount(totalSpending);
+              return text;
+            })()}
+          </div>
           <p className="text-xs text-muted-foreground">
             For selected period
           </p>
@@ -47,7 +52,10 @@ export function SummaryStats({ transactions, timeRange }: SummaryStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatDisplayAmount(averageMonthlySpending)}
+            {(() => {
+              const { text } = formatDisplayAmount(averageMonthlySpending);
+              return text;
+            })()}
           </div>
           <p className="text-xs text-muted-foreground">Per month</p>
         </CardContent>
@@ -60,7 +68,10 @@ export function SummaryStats({ transactions, timeRange }: SummaryStatsProps) {
         <CardContent>
           <div className="text-2xl font-bold">{topCategory.name}</div>
           <p className="text-xs text-muted-foreground">
-            {formatDisplayAmount(topCategory.amount)}
+            {(() => {
+              const { text } = formatDisplayAmount(topCategory.amount);
+              return text;
+            })()}
           </p>
         </CardContent>
       </Card>
@@ -71,7 +82,10 @@ export function SummaryStats({ transactions, timeRange }: SummaryStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatDisplayAmount(totalIncome)}
+            {(() => {
+              const { text } = formatDisplayAmount(totalIncome);
+              return text;
+            })()}
           </div>
           <p className="text-xs text-muted-foreground">For selected period</p>
         </CardContent>

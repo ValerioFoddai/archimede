@@ -66,8 +66,10 @@ export default function App() {
     <Router>
       <AuthProvider>
         <EventEmitterContext.Provider value={eventEmitter}>
-          <AppRoutes />
-          <Toaster />
+          <div className="min-h-screen bg-background">
+            <AppRoutes />
+            <Toaster />
+          </div>
         </EventEmitterContext.Provider>
       </AuthProvider>
     </Router>
