@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Upload, Bot } from 'lucide-react';
+import { Plus, Upload, Bot, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { TransactionList } from '@/components/transactions/transaction-list';
@@ -23,6 +23,7 @@ export function TransactionsPage() {
   const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules } = useTransactions();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isApplyingRules, setIsApplyingRules] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [isAutoRulesDialogOpen, setIsAutoRulesDialogOpen] = useState(false);
@@ -200,11 +201,26 @@ export function TransactionsPage() {
               <AlertDialogCancel onClick={() => setIsAutoRulesDialogOpen(false)}>
                 Cancel
               </AlertDialogCancel>
-              <AlertDialogAction onClick={async () => {
-                await applyTransactionRules();
-                setIsAutoRulesDialogOpen(false);
-              }}>
-                Apply Rules
+              <AlertDialogAction 
+                onClick={async () => {
+                  setIsApplyingRules(true);
+                  try {
+                    await applyTransactionRules();
+                    setIsAutoRulesDialogOpen(false);
+                  } finally {
+                    setIsApplyingRules(false);
+                  }
+                }}
+                disabled={isApplyingRules}
+              >
+                {isApplyingRules ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Applying Rules...
+                  </>
+                ) : (
+                  'Apply Rules'
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
