@@ -72,9 +72,18 @@ export function BudgetList({ budgets, loading, onEdit, onDelete }: BudgetListPro
             return (
               <TableRow key={budget.id}>
                 <TableCell>{category?.name}</TableCell>
-                <TableCell>{formatDisplayAmount(budget.amount)}</TableCell>
-                <TableCell>{formatDisplayAmount(budget.spent)}</TableCell>
-                <TableCell>{formatDisplayAmount(budget.remaining)}</TableCell>
+                <TableCell>{(() => {
+                  const { text, className } = formatDisplayAmount(budget.amount);
+                  return <span className={className}>{text}</span>;
+                })()}</TableCell>
+                <TableCell>{(() => {
+                  const { text, className } = formatDisplayAmount(budget.spent);
+                  return <span className={className}>{text}</span>;
+                })()}</TableCell>
+                <TableCell>{(() => {
+                  const { text, className } = formatDisplayAmount(budget.remaining);
+                  return <span className={className}>{text}</span>;
+                })()}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Progress 

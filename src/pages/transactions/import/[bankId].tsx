@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Upload, Loader2 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,6 @@ import type { TransactionImport, ImportMapping } from '@/types/import';
 
 export function ImportBankPage() {
   const { bankId } = useParams();
-  const navigate = useNavigate();
   const { banks } = useBanks();
   const { processFile, importTransactions, loading: importLoading, error: importError } = useImport();
   const [transactions, setTransactions] = useState<TransactionImport[]>([]);

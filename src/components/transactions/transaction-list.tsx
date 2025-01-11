@@ -32,7 +32,6 @@ interface TransactionListProps {
   onDelete: (transaction: Transaction) => void;
   onSelectTransaction: (id: string, checked: boolean) => void;
   onSelectAll: (checked: boolean) => void;
-  onColumnVisibilityChange: (visibility: Partial<ColumnVisibility>) => void;
   onBulkDelete: () => void;
 }
 
@@ -45,7 +44,6 @@ export function TransactionList({
   onDelete,
   onSelectTransaction,
   onSelectAll,
-  onColumnVisibilityChange,
   onBulkDelete,
 }: TransactionListProps) {
   const { categories } = useExpenseCategories();

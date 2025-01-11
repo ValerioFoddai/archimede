@@ -137,7 +137,6 @@ export function TransactionsPage() {
           onDelete={handleDelete}
           onSelectTransaction={handleSelectTransaction}
           onSelectAll={handleSelectAll}
-          onColumnVisibilityChange={handleColumnVisibilityChange}
           onBulkDelete={() => setIsBulkDeleteDialogOpen(true)}
         />
 
