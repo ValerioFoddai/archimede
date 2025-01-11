@@ -247,8 +247,6 @@ export function useTransactions() {
       await fetchTransactions();
       // Notify other components that transactions have been updated
       eventEmitter.emit(TRANSACTION_UPDATED);
-      // Refresh the page to show updated categories
-      window.location.reload();
     } catch (error) {
       console.error('Error applying transaction rules:', error);
       toast({
