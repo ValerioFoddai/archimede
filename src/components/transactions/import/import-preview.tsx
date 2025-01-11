@@ -37,34 +37,37 @@ export function ImportPreview({ transactions }: ImportPreviewProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transactions.map((transaction, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  {format(transaction.date, 'MMM d, yyyy')}
-                </TableCell>
-                <TableCell>{transaction.merchant}</TableCell>
-                <TableCell className="text-right font-mono">
-                  {formatDisplayAmount(transaction.amount)}
-                </TableCell>
-                <TableCell>{transaction.notes}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        'h-2 w-2 rounded-full',
-                        transaction.status === 'pending' && 'bg-yellow-500',
-                        transaction.status === 'success' && 'bg-green-500',
-                        transaction.status === 'error' && 'bg-red-500',
-                        transaction.status === 'duplicate' && 'bg-blue-500'
-                      )}
-                    />
-                    <span className="text-sm capitalize">
-                      {transaction.status}
-                    </span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {transactions.map((transaction, index) => {
+              const amount = formatDisplayAmount(transaction.amount);
+              return (
+                <TableRow key={index}>
+                  <TableCell>
+                    {format(transaction.date, 'MMM d, yyyy')}
+                  </TableCell>
+                  <TableCell>{transaction.merchant}</TableCell>
+                  <TableCell className={cn("text-right font-mono", amount.className)}>
+                    {amount.text}
+                  </TableCell>
+                  <TableCell>{transaction.notes}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={cn(
+                          'h-2 w-2 rounded-full',
+                          transaction.status === 'pending' && 'bg-yellow-500',
+                          transaction.status === 'success' && 'bg-green-500',
+                          transaction.status === 'error' && 'bg-red-500',
+                          transaction.status === 'duplicate' && 'bg-blue-500'
+                        )}
+                      />
+                      <span className="text-sm capitalize">
+                        {transaction.status}
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
