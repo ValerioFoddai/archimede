@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { Bot, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { TransactionList } from '@/components/transactions/transaction-list';
 import { TransactionHeader } from '@/components/transactions/transaction-header';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,

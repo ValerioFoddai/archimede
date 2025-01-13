@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { useToast } from './useToast';
 import { eventEmitter, TRANSACTION_UPDATED } from '@/lib/events';
-import { format, subDays, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
 import type { TransactionFormData, Transaction } from '../types/transactions';
 
 interface TransactionTag {

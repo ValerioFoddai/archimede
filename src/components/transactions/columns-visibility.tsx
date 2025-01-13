@@ -4,7 +4,7 @@ import {
   PopoverTrigger,
 } from "../ui/popover";
 import { Button } from "../ui/button";
-import { ChevronDown, Columns } from "lucide-react";
+import { Columns } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
