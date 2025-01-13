@@ -30,7 +30,9 @@ export function TransactionsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isApplyingRules, setIsApplyingRules] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [isAutoRulesDialogOpen, setIsAutoRulesDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -67,19 +69,27 @@ export function TransactionsPage() {
 
   const handleDeleteConfirm = async () => {
     if (transactionToDelete) {
-      await deleteTransaction(transactionToDelete.id);
-      setIsDeleteDialogOpen(false);
-      setTransactionToDelete(null);
+      try {
+        setIsDeleting(true);
+        await deleteTransaction(transactionToDelete.id);
+        setIsDeleteDialogOpen(false);
+        setTransactionToDelete(null);
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
   const handleBulkDeleteConfirm = async () => {
     try {
+      setIsBulkDeleting(true);
       await Promise.all(selectedIds.map(id => deleteTransaction(id)));
       setSelectedIds([]);
       setIsBulkDeleteDialogOpen(false);
     } catch (error) {
       console.error('Error deleting transactions:', error);
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
@@ -153,8 +163,18 @@ export function TransactionsPage() {
               <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
                 Cancel
               </AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm}>
-                Delete
+              <AlertDialogAction 
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -172,8 +192,18 @@ export function TransactionsPage() {
               <AlertDialogCancel onClick={() => setIsBulkDeleteDialogOpen(false)}>
                 Cancel
               </AlertDialogCancel>
-              <AlertDialogAction onClick={handleBulkDeleteConfirm}>
-                Delete
+              <AlertDialogAction 
+                onClick={handleBulkDeleteConfirm}
+                disabled={isBulkDeleting}
+              >
+                {isBulkDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
