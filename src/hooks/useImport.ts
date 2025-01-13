@@ -3,6 +3,7 @@ import { useAuth } from '../lib/auth';
 import { parseImportFile } from '../lib/import/parser';
 import { checkDuplicates } from '../lib/import/duplicate-checker';
 import { supabase } from '../lib/supabase';
+import { format } from 'date-fns';
 import type { TransactionImport } from '../types/import';
 import type { ImportConfig } from '../types/import';
 
@@ -38,15 +39,45 @@ export function useImport() {
 
       // Filter out transactions that are not valid for import
       const validTransactions = transactions.filter(t => t.status === 'pending');
+      console.log('Transactions to import:', {
+        total: transactions.length,
+        valid: validTransactions.length,
+        duplicates: transactions.filter(t => t.status === 'duplicate').length,
+        errors: transactions.filter(t => t.status === 'error').length
+      });
 
       if (validTransactions.length === 0) {
         return 0;
       }
 
-      // Prepare transactions for import
-      const transactionsToInsert = validTransactions.map(t => ({
+      // Double-check for duplicates before insert
+      const { data: existingTransactions } = await supabase
+        .from('user_transactions')
+        .select('date, merchant, amount')
+        .eq('user_id', user.id);
+
+      // Prepare transactions for import, with additional duplicate check
+      const transactionsToInsert = validTransactions.filter(t => {
+        const formattedDate = format(t.date, 'yyyy-MM-dd');
+        const isDuplicate = existingTransactions?.some(existing => 
+          existing.date === formattedDate &&
+          existing.merchant.toLowerCase().trim() === t.merchant.toLowerCase().trim() &&
+          existing.amount === t.amount
+        );
+        
+        if (isDuplicate) {
+          console.log('Caught duplicate before insert:', {
+            date: formattedDate,
+            merchant: t.merchant,
+            amount: t.amount
+          });
+          t.status = 'duplicate';
+        }
+        
+        return !isDuplicate;
+      }).map(t => ({
         user_id: user.id,
-        date: t.date.toISOString(),
+        date: format(t.date, 'yyyy-MM-dd'),
         merchant: t.merchant,
         amount: t.amount,
         notes: t.notes,

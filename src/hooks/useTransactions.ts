@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { useToast } from './useToast';
 import { eventEmitter, TRANSACTION_UPDATED } from '@/lib/events';
-import { format } from 'date-fns';
+import { format, subDays, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 import type { TransactionFormData, Transaction } from '../types/transactions';
 
 interface TransactionTag {
@@ -25,18 +25,52 @@ interface RawTransaction {
   transaction_tags: TransactionTag[];
 }
 
-export function useTransactions() {
+export type TimeRange = string; // Format: '7d' for last 7 days or 'month-YYYY-MM' for specific month
+
+export function useTransactions(timeRange?: TimeRange) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const getDateFilter = () => {
+    if (!timeRange) return null;
+
+    console.log('Getting date filter for timeRange:', timeRange);
+
+    if (timeRange === '7d') {
+      const endDate = new Date();
+      const startDate = subDays(endDate, 7);
+      const filter = {
+        start: format(startDate, 'yyyy-MM-dd'),
+        end: format(endDate, 'yyyy-MM-dd')
+      };
+      console.log('Last 7 days filter:', filter);
+      return filter;
+    }
+
+    const match = timeRange.match(/month-(\d{4})-(\d{2})/);
+    if (match) {
+      const [_, year, month] = match;
+      const date = new Date(parseInt(year), parseInt(month) - 1);
+      const filter = {
+        start: format(startOfMonth(date), 'yyyy-MM-dd'),
+        end: format(endOfMonth(date), 'yyyy-MM-dd')
+      };
+      console.log('Monthly filter:', filter);
+      return filter;
+    }
+
+    console.log('No date filter applied');
+    return null;
+  };
 
   const fetchTransactions = async () => {
     if (!user) return;
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('user_transactions')
         .select(`
           *,
@@ -44,8 +78,29 @@ export function useTransactions() {
             tag_id
           )
         `)
-        .eq('user_id', user.id)
-        .order('date', { ascending: false });
+        .eq('user_id', user.id);
+
+      const dateFilter = getDateFilter();
+      if (dateFilter) {
+        query = query
+          .gte('date', dateFilter.start)
+          .lte('date', dateFilter.end);
+        console.log('Applied date filter to query:', {
+          filter: dateFilter,
+          timeRange,
+          start: dateFilter.start,
+          end: dateFilter.end
+        });
+      }
+
+      const { data, error } = await query.order('date', { ascending: false });
+      console.log('Fetched transactions:', {
+        count: data?.length,
+        timeRange,
+        dateFilter,
+        firstTransaction: data?.[0]?.date,
+        lastTransaction: data?.[data.length - 1]?.date
+      });
 
       if (error) throw error;
 
@@ -417,9 +472,11 @@ export function useTransactions() {
     }
   };
 
+  // Ensure fetchTransactions is called when timeRange changes
   useEffect(() => {
+    console.log('useEffect triggered with timeRange:', timeRange);
     fetchTransactions();
-  }, [user]);
+  }, [user, timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     transactions,

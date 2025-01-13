@@ -5,17 +5,47 @@ export async function checkDuplicates(
   transactions: TransactionImport[],
   userId: string
 ): Promise<TransactionImport[]> {
+  // Get all user's transactions
   const { data: existingTransactions } = await supabase
     .from('user_transactions')
     .select('date, merchant, amount')
     .eq('user_id', userId);
 
+  console.log('Checking against existing transactions:', {
+    count: existingTransactions?.length
+  });
+
   return transactions.map(transaction => {
-    const isDuplicate = existingTransactions?.some(existing => 
-      existing.date === transaction.date.toISOString().split('T')[0] &&
-      existing.merchant === transaction.merchant &&
-      existing.amount === transaction.amount
-    );
+    // Format the transaction date consistently
+    const transactionDate = transaction.date.toISOString().split('T')[0];
+    const normalizedMerchant = transaction.merchant.toLowerCase().trim();
+    
+    // Find exact duplicates
+    const duplicates = existingTransactions?.filter(existing => {
+      const existingMerchant = existing.merchant.toLowerCase().trim();
+      const isExactMatch = existing.date === transactionDate &&
+                          existingMerchant === normalizedMerchant &&
+                          existing.amount === transaction.amount;
+      
+      if (isExactMatch) {
+        console.log('Found exact duplicate:', {
+          new: {
+            date: transactionDate,
+            merchant: normalizedMerchant,
+            amount: transaction.amount
+          },
+          existing: {
+            date: existing.date,
+            merchant: existingMerchant,
+            amount: existing.amount
+          }
+        });
+      }
+      
+      return isExactMatch;
+    }) || [];
+
+    const isDuplicate = duplicates.length > 0;
 
     return {
       ...transaction,

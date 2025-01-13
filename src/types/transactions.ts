@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export type TimeRange = string; // Format: '7d' for last 7 days or 'month-YYYY-MM' for specific month
+
 export const transactionSchema = z.object({
   bankId: z.string().optional(),
   date: z.date({

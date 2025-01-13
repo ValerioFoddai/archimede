@@ -41,15 +41,21 @@ function parseAmount(value: string): number {
 function tryParseDate(value: string, format?: string): Date | null {
   if (!value) return null;
 
+  // Extract year from the value if possible
+  const yearMatch = value.match(/\b(20\d{2})\b/);
+  const referenceDate = yearMatch 
+    ? new Date(parseInt(yearMatch[1]), 0, 1) // Use January 1st of the matched year
+    : new Date();
+
   // If format is provided, try it first
   if (format) {
-    const date = parseDate(value, format, new Date());
+    const date = parseDate(value, format, referenceDate);
     if (isValid(date)) return date;
   }
 
   // Try common formats
   for (const fmt of COMMON_DATE_FORMATS) {
-    const date = parseDate(value, fmt, new Date());
+    const date = parseDate(value, fmt, referenceDate);
     if (isValid(date)) return date;
   }
 

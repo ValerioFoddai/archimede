@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Plus, Upload, Bot, Loader2, Settings2 } from 'lucide-react';
+import { Bot, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { TransactionList } from '@/components/transactions/transaction-list';
+import { TransactionHeader } from '@/components/transactions/transaction-header';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -22,14 +23,16 @@ import { useTransactionRules } from '@/hooks/useTransactionRules';
 import type { Transaction, TransactionFormData, ColumnVisibility } from '@/types/transactions';
 
 export function TransactionsPage() {
-  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules } = useTransactions();
+  const [timeRange, setTimeRange] = useState<string>('7d');
+  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules } = useTransactions(timeRange);
   const { rules } = useTransactionRules();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isApplyingRules, setIsApplyingRules] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isColumnVisibilityOpen, setIsColumnVisibilityOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [isAutoRulesDialogOpen, setIsAutoRulesDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -66,19 +69,27 @@ export function TransactionsPage() {
 
   const handleDeleteConfirm = async () => {
     if (transactionToDelete) {
-      await deleteTransaction(transactionToDelete.id);
-      setIsDeleteDialogOpen(false);
-      setTransactionToDelete(null);
+      try {
+        setIsDeleting(true);
+        await deleteTransaction(transactionToDelete.id);
+        setIsDeleteDialogOpen(false);
+        setTransactionToDelete(null);
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
   const handleBulkDeleteConfirm = async () => {
     try {
+      setIsBulkDeleting(true);
       await Promise.all(selectedIds.map(id => deleteTransaction(id)));
       setSelectedIds([]);
       setIsBulkDeleteDialogOpen(false);
     } catch (error) {
       console.error('Error deleting transactions:', error);
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
@@ -99,34 +110,14 @@ export function TransactionsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Transactions</h2>
-            <p className="text-muted-foreground">
-              View and manage your transactions
-            </p>
-          </div>
-          <div className="flex items-center">
-            <Button variant="outline" size="icon" onClick={() => setIsColumnVisibilityOpen(true)}>
-              <Settings2 className="h-4 w-4" />
-            </Button>
-            <div className="w-px h-6 bg-border mx-2" /> {/* Divider */}
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={() => setIsAutoRulesDialogOpen(true)}>
-                <Bot className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" asChild>
-                <Link to="/transactions/import">
-                  <Upload className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button onClick={() => setIsFormOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Transaction
-              </Button>
-            </div>
-          </div>
-        </div>
+        <TransactionHeader
+          onAddTransaction={() => setIsFormOpen(true)}
+          onApplyRules={() => setIsAutoRulesDialogOpen(true)}
+          columnVisibility={columnVisibility}
+          onColumnVisibilityChange={handleColumnVisibilityChange}
+          timeRange={timeRange}
+          onTimeRangeChange={setTimeRange}
+        />
         
         <TransactionList
           transactions={transactions}
@@ -172,8 +163,18 @@ export function TransactionsPage() {
               <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
                 Cancel
               </AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm}>
-                Delete
+              <AlertDialogAction 
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -191,8 +192,18 @@ export function TransactionsPage() {
               <AlertDialogCancel onClick={() => setIsBulkDeleteDialogOpen(false)}>
                 Cancel
               </AlertDialogCancel>
-              <AlertDialogAction onClick={handleBulkDeleteConfirm}>
-                Delete
+              <AlertDialogAction 
+                onClick={handleBulkDeleteConfirm}
+                disabled={isBulkDeleting}
+              >
+                {isBulkDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -247,68 +258,6 @@ export function TransactionsPage() {
           </AlertDialogContent>
         </AlertDialog>
 
-        <Dialog open={isColumnVisibilityOpen} onOpenChange={setIsColumnVisibilityOpen}>
-          <DialogContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium">Column Visibility</h3>
-                <p className="text-sm text-muted-foreground">
-                  Select which columns to display in the transactions table
-                </p>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="bank" 
-                    checked={columnVisibility.bank}
-                    onCheckedChange={(checked: boolean) => 
-                      handleColumnVisibilityChange({ bank: checked as boolean })
-                    }
-                  />
-                  <label htmlFor="bank" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Bank
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="category" 
-                    checked={columnVisibility.category}
-                    onCheckedChange={(checked: boolean) => 
-                      handleColumnVisibilityChange({ category: checked as boolean })
-                    }
-                  />
-                  <label htmlFor="category" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Category
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="tags" 
-                    checked={columnVisibility.tags}
-                    onCheckedChange={(checked: boolean) => 
-                      handleColumnVisibilityChange({ tags: checked as boolean })
-                    }
-                  />
-                  <label htmlFor="tags" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Tags
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="notes" 
-                    checked={columnVisibility.notes}
-                    onCheckedChange={(checked: boolean) => 
-                      handleColumnVisibilityChange({ notes: checked as boolean })
-                    }
-                  />
-                  <label htmlFor="notes" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Notes
-                  </label>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </DashboardLayout>
   );
