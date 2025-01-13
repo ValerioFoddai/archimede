@@ -3,6 +3,7 @@ import { useAuth } from '../lib/auth';
 import { parseImportFile } from '../lib/import/parser';
 import { checkDuplicates } from '../lib/import/duplicate-checker';
 import { supabase } from '../lib/supabase';
+import { format } from 'date-fns';
 import type { TransactionImport } from '../types/import';
 import type { ImportConfig } from '../types/import';
 
@@ -46,7 +47,7 @@ export function useImport() {
       // Prepare transactions for import
       const transactionsToInsert = validTransactions.map(t => ({
         user_id: user.id,
-        date: t.date.toISOString(),
+        date: format(t.date, 'yyyy-MM-dd'),
         merchant: t.merchant,
         amount: t.amount,
         notes: t.notes,
