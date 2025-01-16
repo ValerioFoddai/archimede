@@ -7,7 +7,6 @@ import { ForgotPasswordForm } from './components/auth/forgot-password-form';
 import { DashboardPage } from './pages/dashboard';
 import { TransactionsPage } from './pages/transactions';
 import { ImportPage } from './pages/transactions/import';
-import { ImportBankPage } from './pages/transactions/import/[bankId]';
 import { SettingsLayout } from './pages/settings/layout';
 import { SettingsPage } from './pages/settings';
 import { ExpenseCategoriesPage } from './pages/settings/expense-categories';
