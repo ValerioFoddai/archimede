@@ -10,4 +10,5 @@ export interface BankImportConfig {
   columnMappings: {
     [key: string]: string;
   };
+  skipRows?: number; // Number of rows to skip before starting to parse data
 }
