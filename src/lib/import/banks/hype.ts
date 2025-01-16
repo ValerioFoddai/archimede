@@ -2,10 +2,11 @@ import { BankImportConfig } from '@/types/banks';
 
 export const hypeBankConfig: BankImportConfig = {
   fileTypes: ['csv'],
-  requiredColumns: ['date', 'description', 'amount'],
+  requiredColumns: ['date', 'merchant', 'amount'],
   columnMappings: {
     date: 'Data operazione',
-    description: 'Descrizione',
-    amount: 'Importo',
+    merchant: 'Nome',
+    notes: 'Descrizione',
+    amount: 'Importo ( € )',
   },
 };

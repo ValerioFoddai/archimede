@@ -43,8 +43,7 @@ function AppRoutes() {
       
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
-      <Route path="/transactions/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
-      <Route path="/transactions/import/:bankId" element={<ProtectedRoute><ImportBankPage /></ProtectedRoute>} />
+      <Route path="/transactions/import/*" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
       <Route path="/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
       
