@@ -7,9 +7,10 @@ interface FileUploadProps {
   onUpload: (file: File) => Promise<void>;
   loading?: boolean;
   selectedFile?: File | null;
+  acceptedFormats?: string[]; // Array of supported file extensions without dots (e.g., ['csv', 'xlsx'])
 }
 
-export function FileUpload({ onUpload, loading, selectedFile }: FileUploadProps) {
+export function FileUpload({ onUpload, loading, selectedFile, acceptedFormats = ['csv'] }: FileUploadProps) {
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: any[]) => {
@@ -27,8 +28,8 @@ export function FileUpload({ onUpload, loading, selectedFile }: FileUploadProps)
         const fileExtension = file.name.split('.').pop()?.toLowerCase();
         
         // Validate file type
-        if (!fileExtension || fileExtension !== 'csv') {
-          setError('Please upload a CSV file');
+        if (!fileExtension || !acceptedFormats.includes(fileExtension)) {
+          setError(`Please upload a ${acceptedFormats.map(f => f.toUpperCase()).join(' or ')} file`);
           return;
         }
 
@@ -43,7 +44,8 @@ export function FileUpload({ onUpload, loading, selectedFile }: FileUploadProps)
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'text/csv': ['.csv']
+      'text/csv': ['.csv'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
     },
     maxFiles: 1,
     disabled: loading,
@@ -87,7 +89,7 @@ export function FileUpload({ onUpload, loading, selectedFile }: FileUploadProps)
                   : 'Drag and drop your file here, or click to select'}
               </p>
               <p className="text-xs text-muted-foreground">
-                Supported format: CSV
+                Supported format{acceptedFormats.length > 1 ? 's' : ''}: {acceptedFormats.map(f => f.toUpperCase()).join(', ')}
               </p>
             </>
           )}

@@ -32,4 +32,5 @@ export interface ImportConfig {
   columnMappings: Record<string, string>;
   dateFormat: string;
   bankId?: string;
+  skipRows?: number; // Number of rows to skip before starting to parse data
 }

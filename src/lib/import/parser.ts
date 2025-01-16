@@ -1,5 +1,6 @@
 import { parse } from 'papaparse';
 import { parse as parseDate, isValid } from 'date-fns';
+import { read, utils, Sheet2JSONOpts } from 'xlsx';
 import { ImportConfig, TransactionImport } from '../../types/import';
 
 // Common date formats to try if no format is specified
@@ -66,7 +67,51 @@ function tryParseDate(value: string, format?: string): Date | null {
   return null;
 }
 
-async function parseCSV(file: File): Promise<Record<string, string>[]> {
+async function parseFile(file: File, config: ImportConfig): Promise<Record<string, string>[]> {
+  const fileExtension = file.name.split('.').pop()?.toLowerCase();
+
+  if (fileExtension === 'xlsx') {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const options: Sheet2JSONOpts = {
+            header: 1, // Use 1-based array of values for all rows
+            raw: false, // Convert all values to strings
+          };
+          
+          // Get all rows as arrays first
+          const allRows = utils.sheet_to_json<string[]>(firstSheet, options);
+          
+          // Skip header rows if configured
+          const dataRows = config.skipRows ? allRows.slice(config.skipRows) : allRows;
+          
+          // Get headers from the first row of data
+          const headers = dataRows[0];
+          
+          // Convert remaining rows to objects using headers
+          const rows = dataRows.slice(1).map(row => {
+            const obj: Record<string, string> = {};
+            headers.forEach((header: string, index: number) => {
+              if (row[index] !== undefined) {
+                obj[header] = String(row[index]);
+              }
+            });
+            return obj;
+          });
+          resolve(rows);
+        } catch (error) {
+          reject(new Error(`Failed to parse XLSX: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
   return new Promise((resolve, reject) => {
     parse(file, {
       header: true,
@@ -91,8 +136,8 @@ export async function parseImportFile(
   try {
     if (!file) throw new Error('No file provided');
 
-    // Parse CSV file
-    const rows = await parseCSV(file);
+    // Parse file based on type
+    const rows = await parseFile(file, config);
 
     return rows.map((row) => {
       try {
@@ -143,13 +188,22 @@ function transformRow(
     const date = tryParseDate(dateValue, config.dateFormat);
     if (!date) throw new Error('Invalid date format');
 
-    // Get amount
+    // Get amount - handle special case for Fineco's two amount columns
     const amountColumn = config.columnMappings.amount;
     if (!amountColumn) throw new Error('Amount column not mapped');
-    const amountValue = row[amountColumn];
-    if (!amountValue) throw new Error('Amount is required');
     
-    const amount = parseAmount(amountValue);
+    let amount = 0;
+    if (amountColumn.includes('|')) {
+      // Handle split amount columns (e.g., "Entrate|Uscite" for Fineco)
+      const [positiveCol, negativeCol] = amountColumn.split('|');
+      const positiveAmount = row[positiveCol] ? parseAmount(row[positiveCol]) : 0;
+      const negativeAmount = row[negativeCol] ? -Math.abs(parseAmount(row[negativeCol])) : 0;
+      amount = positiveAmount + negativeAmount;
+    } else {
+      const amountValue = row[amountColumn];
+      if (!amountValue) throw new Error('Amount is required');
+      amount = parseAmount(amountValue);
+    }
 
     // Get merchant and notes
     const merchantColumn = config.columnMappings.merchant;

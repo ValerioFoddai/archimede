@@ -32,6 +32,22 @@ export function ImportSelectionPage() {
             </Card>
           </Link>
 
+          <Link to="/transactions/import/fineco">
+            <Card className="hover:border-primary transition-colors cursor-pointer h-full">
+              <CardHeader className="flex flex-row items-center gap-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <CreditCard className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="text-lg">Fineco Bank</CardTitle>
+                  <CardDescription className="text-sm">
+                    Import transactions directly from your Fineco Bank XLSX export
+                  </CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link to="/transactions/import/custom">
             <Card className="hover:border-primary transition-colors cursor-pointer h-full">
               <CardHeader className="flex flex-row items-center gap-4">
