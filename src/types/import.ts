@@ -5,6 +5,7 @@ export interface TransactionImport {
   notes: string | null;
   status: 'pending' | 'success' | 'error' | 'duplicate';
   errors: string[];
+  bank_id?: string;
 }
 
 export interface ImportSummary {
@@ -30,4 +31,5 @@ export interface ImportMapping {
 export interface ImportConfig {
   columnMappings: Record<string, string>;
   dateFormat: string;
+  bankId?: string;
 }

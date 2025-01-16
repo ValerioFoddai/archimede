@@ -76,11 +76,12 @@ export function useImport() {
         
         return !isDuplicate;
       }).map(t => ({
-        user_id: user.id,
-        date: format(t.date, 'yyyy-MM-dd'),
-        merchant: t.merchant,
-        amount: t.amount,
-        notes: t.notes,
+      user_id: user.id,
+      date: format(t.date, 'yyyy-MM-dd'),
+      merchant: t.merchant,
+      amount: t.amount,
+      notes: t.notes,
+      bank_id: t.bank_id,
       }));
 
       // Insert transactions

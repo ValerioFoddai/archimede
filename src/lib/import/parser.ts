@@ -160,14 +160,15 @@ function transformRow(
     const notesColumn = config.columnMappings.notes;
     const notes = notesColumn ? row[notesColumn]?.trim() || null : null;
 
-    return {
-      date,
-      merchant,
-      amount,
-      notes,
-      status: 'pending',
-      errors: [],
-    };
+      return {
+        date,
+        merchant,
+        amount,
+        notes,
+        status: 'pending',
+        errors: [],
+        bank_id: config.bankId,
+      };
   } catch (error) {
     console.error('Error transforming row:', error, { row, config });
     throw error;
