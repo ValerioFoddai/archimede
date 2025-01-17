@@ -62,13 +62,11 @@ A comprehensive personal finance management system designed to help you track, a
   - Documentation updates
   - Bug fixing and optimization
 
-### Development Tools
+### Development & Deployment
 - VSCode as primary IDE
 - Git for version control
 - GitHub for repository hosting
-- StackBlitz for online development
-
-[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/ValerioFoddai/archimede)
+- Vercel for continuous deployment and hosting
 
 ## Documentation
 
