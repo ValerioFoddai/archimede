@@ -21,13 +21,13 @@ import { useExpenseCategories } from '@/hooks/useExpenseCategories';
 import { useBanks } from '@/hooks/useBanks';
 import { useTags } from '@/hooks/useTags';
 import { formatDisplayAmount } from '@/lib/format';
-import type { Transaction, ColumnVisibility } from '@/types/transactions';
+import type { Transaction } from '@/types/transactions';
+import { useColumnPreferences } from '@/hooks/useColumnPreferences';
 
 interface TransactionListProps {
   transactions: Transaction[];
   loading: boolean;
   selectedIds: string[];
-  columnVisibility: ColumnVisibility;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
   onSelectTransaction: (id: string, checked: boolean) => void;
@@ -39,18 +39,21 @@ export function TransactionList({
   transactions, 
   loading, 
   selectedIds,
-  columnVisibility,
   onEdit, 
   onDelete,
   onSelectTransaction,
   onSelectAll,
   onBulkDelete,
 }: TransactionListProps) {
+  const { columnVisibility, isLoading: preferencesLoading } = useColumnPreferences();
+
+  // Debug log to track visibility state
+  console.log('Column Visibility:', columnVisibility);
   const { categories } = useExpenseCategories();
   const { banks } = useBanks();
   const { tags } = useTags();
 
-  if (loading) {
+  if (loading || preferencesLoading) {
     return (
       <div className="text-center py-4 text-muted-foreground">
         Loading transactions...
@@ -111,49 +114,51 @@ export function TransactionList({
                       }
                     />
                   </TableCell>
-                  <TableCell>
-                    {format(transaction.date, 'MMM d, yyyy')}
-                  </TableCell>
-                  {columnVisibility.bank && (
-                    <TableCell>{bank?.name}</TableCell>
-                  )}
-                  <TableCell>{transaction.merchant}</TableCell>
-                  <TableCell className="text-right">
-                    {(() => {
-                      const { text, className } = formatDisplayAmount(transaction.amount);
-                      return <span className={className}>{text}</span>;
-                    })()}
-                  </TableCell>
-                  {columnVisibility.category && (
+                  <>
                     <TableCell>
-                      {mainCategory && (
-                        <div className="space-y-1">
-                          <div>{mainCategory.name}</div>
-                          {subCategory && (
-                            <div className="text-sm text-muted-foreground">
-                              {subCategory.name}
-                            </div>
-                          )}
+                      {format(transaction.date, 'MMM d, yyyy')}
+                    </TableCell>
+                    {columnVisibility.bank && (
+                      <TableCell>{bank?.name}</TableCell>
+                    )}
+                    <TableCell>{transaction.merchant}</TableCell>
+                    <TableCell className="text-right">
+                      {(() => {
+                        const { text, className } = formatDisplayAmount(transaction.amount);
+                        return <span className={className}>{text}</span>;
+                      })()}
+                    </TableCell>
+                    {columnVisibility.category && (
+                      <TableCell>
+                        {mainCategory && (
+                          <div className="space-y-1">
+                            <div>{mainCategory.name}</div>
+                            {subCategory && (
+                              <div className="text-sm text-muted-foreground">
+                                {subCategory.name}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
+                    )}
+                    {columnVisibility.tags && (
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {transactionTags.map((tag) => (
+                            <Badge key={tag.id} variant="secondary">
+                              {tag.name}
+                            </Badge>
+                          ))}
                         </div>
-                      )}
-                    </TableCell>
-                  )}
-                  {columnVisibility.tags && (
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {transactionTags.map((tag) => (
-                          <Badge key={tag.id} variant="secondary">
-                            {tag.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                  )}
-                  {columnVisibility.notes && (
-                    <TableCell className="max-w-[200px] truncate">
-                      {transaction.notes}
-                    </TableCell>
-                  )}
+                      </TableCell>
+                    )}
+                    {columnVisibility.notes && (
+                      <TableCell className="max-w-[200px] truncate">
+                        {transaction.notes}
+                      </TableCell>
+                    )}
+                  </>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

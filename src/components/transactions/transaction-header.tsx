@@ -3,24 +3,22 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ColumnsVisibility } from "./columns-visibility";
 import { TimeFilter } from "./time-filter";
-import type { TimeRange, ColumnVisibility } from "@/types/transactions";
+import type { TimeRange } from "@/types/transactions";
 
 interface TransactionHeaderProps {
   onAddTransaction: () => void;
   onApplyRules: () => void;
-  columnVisibility: ColumnVisibility;
-  onColumnVisibilityChange: (visibility: ColumnVisibility) => void;
   timeRange: TimeRange;
   onTimeRangeChange: (range: TimeRange) => void;
+  onRefresh: () => void;
 }
 
 export function TransactionHeader({ 
   onAddTransaction,
   onApplyRules,
-  columnVisibility,
-  onColumnVisibilityChange,
   timeRange,
   onTimeRangeChange,
+  onRefresh,
 }: TransactionHeaderProps) {
   return (
     <div className="flex justify-between items-center">
@@ -32,7 +30,7 @@ export function TransactionHeader({
       </div>
       <div className="flex items-center gap-2">
         <TimeFilter value={timeRange} onChange={onTimeRangeChange} />
-        <ColumnsVisibility value={columnVisibility} onChange={onColumnVisibilityChange} />
+        <ColumnsVisibility onRefresh={onRefresh} />
         <Button variant="outline" size="icon" onClick={onApplyRules}>
           <Bot className="h-4 w-4" />
         </Button>

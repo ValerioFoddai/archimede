@@ -18,11 +18,11 @@ import {
 import { TransactionForm } from '@/components/transactions/transaction-form';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useTransactionRules } from '@/hooks/useTransactionRules';
-import type { Transaction, TransactionFormData, ColumnVisibility } from '@/types/transactions';
+import type { Transaction, TransactionFormData } from '@/types/transactions';
 
 export function TransactionsPage() {
   const [timeRange, setTimeRange] = useState<string>('7d');
-  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules } = useTransactions(timeRange);
+  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules, refresh } = useTransactions(timeRange);
   const { rules } = useTransactionRules();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -34,12 +34,14 @@ export function TransactionsPage() {
   const [isAutoRulesDialogOpen, setIsAutoRulesDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({
-    bank: false,
-    category: true,
-    tags: true,
-    notes: true,
-  });
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = () => {
+    // Increment key to force re-render of entire container
+    setRefreshKey(prev => prev + 1);
+    // Also refresh data
+    refresh();
+  };
 
   const handleEdit = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -101,27 +103,21 @@ export function TransactionsPage() {
     setSelectedIds(checked ? transactions.map(t => t.id) : []);
   };
 
-  const handleColumnVisibilityChange = (visibility: Partial<ColumnVisibility>) => {
-    setColumnVisibility(prev => ({ ...prev, ...visibility }));
-  };
-
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6" key={refreshKey}>
         <TransactionHeader
           onAddTransaction={() => setIsFormOpen(true)}
           onApplyRules={() => setIsAutoRulesDialogOpen(true)}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={handleColumnVisibilityChange}
           timeRange={timeRange}
           onTimeRangeChange={setTimeRange}
+          onRefresh={handleRefresh}
         />
         
         <TransactionList
           transactions={transactions}
           loading={loading}
           selectedIds={selectedIds}
-          columnVisibility={columnVisibility}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onSelectTransaction={handleSelectTransaction}

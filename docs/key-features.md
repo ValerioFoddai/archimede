@@ -10,6 +10,19 @@
 - Notes and merchant information
 - Date and amount tracking
 - Multi-currency support
+- Customizable column visibility with persistence
+
+### Column Visibility
+Located in `src/components/transactions/columns-visibility/`:
+- Configurable column display preferences
+- Persistent settings per user
+- Real-time UI updates
+- Toggleable columns:
+  - Bank
+  - Category
+  - Tags
+  - Notes
+- Database-backed preferences
 
 ### Transaction Form
 The transaction form (`src/components/transactions/transaction-form/`) provides:

@@ -49,6 +49,7 @@ Components are organized by feature to maintain a scalable and maintainable code
 - `transactions/`: Transaction management
   - `import/`: Import flow components
   - `transaction-form/`: Transaction creation/editing
+  - `columns-visibility/`: Column visibility preferences
 - `expense-categories/`: Expense categorization
 - `user-tags/`: Tag management system
 
@@ -60,6 +61,7 @@ Custom hooks encapsulate reusable logic:
 - `useExpenseCategories.ts`: Category management
 - `useImport.ts`: Import flow logic
 - `useTags.ts`: Tagging system
+- `useColumnPreferences.ts`: Column visibility preferences
 
 ## Database Structure
 
@@ -70,6 +72,7 @@ The database schema is managed through Supabase migrations in the `supabase/migr
 - Import Mappings
 - Transaction Rules
 - Budgets
+- Column Preferences (columns_transactions)
 
 ## Build Configuration
 
