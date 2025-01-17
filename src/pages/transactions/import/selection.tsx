@@ -16,22 +16,27 @@ export function ImportSelectionPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          <Link to="/transactions/import/hype">
+          {/* Banca Sella Import */}
+          <Link to="/transactions/import/banca-sella">
             <Card className="hover:border-primary transition-colors cursor-pointer h-full">
               <CardHeader className="flex flex-row items-center gap-4">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <CreditCard className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-lg">Hype Bank</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-lg">Banca Sella</CardTitle>
+                    <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Beta</span>
+                  </div>
                   <CardDescription className="text-sm">
-                    Import transactions directly from your Hype Bank CSV export
+                    Import transactions directly from your Banca Sella CSV export
                   </CardDescription>
                 </div>
               </CardHeader>
             </Card>
           </Link>
 
+          {/* Fineco Bank Import */}
           <Link to="/transactions/import/fineco">
             <Card className="hover:border-primary transition-colors cursor-pointer h-full">
               <CardHeader className="flex flex-row items-center gap-4">
@@ -39,15 +44,33 @@ export function ImportSelectionPage() {
                   <CreditCard className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-lg">Fineco Bank</CardTitle>
+                  <CardTitle className="text-lg">Fineco</CardTitle>
                   <CardDescription className="text-sm">
-                    Import transactions directly from your Fineco Bank XLSX export
+                    Import transactions directly from your Fineco XLSX export
                   </CardDescription>
                 </div>
               </CardHeader>
             </Card>
           </Link>
 
+          {/* Hype Bank Import */}
+          <Link to="/transactions/import/hype">
+            <Card className="hover:border-primary transition-colors cursor-pointer h-full">
+              <CardHeader className="flex flex-row items-center gap-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <CreditCard className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="text-lg">Hype</CardTitle>
+                  <CardDescription className="text-sm">
+                    Import transactions directly from your Hype CSV export
+                  </CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+          </Link>
+
+          {/* Custom CSV Import (always last) */}
           <Link to="/transactions/import/custom">
             <Card className="hover:border-primary transition-colors cursor-pointer h-full">
               <CardHeader className="flex flex-row items-center gap-4">

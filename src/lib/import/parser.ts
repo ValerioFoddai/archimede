@@ -14,29 +14,37 @@ const COMMON_DATE_FORMATS = [
 ];
 
 function parseAmount(value: string): number {
+  // Handle empty strings
+  if (!value || value.trim() === '') {
+    return 0;
+  }
+
   // Remove currency symbols, spaces, and handle different decimal/thousand separators
   const cleanAmount = value
-    .replace(/[^0-9.,\-]/g, '') // Remove all non-numeric chars except . , and -
+    .replace(/[^0-9.,\-+]/g, '') // Remove all non-numeric chars except . , - and +
     .replace(/\s/g, '') // Remove spaces
     .trim();
 
-  // Handle different decimal separators
-  let normalizedAmount = cleanAmount;
-  if (cleanAmount.includes(',')) {
+  // Handle plus sign
+  const isPositive = cleanAmount.includes('+');
+
+  // Remove plus sign and handle different decimal separators
+  let normalizedAmount = cleanAmount.replace('+', '');
+  if (normalizedAmount.includes(',')) {
     // If there's a comma, determine if it's a decimal or thousand separator
-    const parts = cleanAmount.split(',');
+    const parts = normalizedAmount.split(',');
     if (parts[parts.length - 1].length === 2) {
       // Likely a decimal separator (e.g., 1.234,56)
-      normalizedAmount = cleanAmount.replace(/\./g, '').replace(',', '.');
+      normalizedAmount = normalizedAmount.replace(/\./g, '').replace(',', '.');
     } else {
       // Likely a thousand separator (e.g., 1,234.56)
-      normalizedAmount = cleanAmount.replace(/,/g, '');
+      normalizedAmount = normalizedAmount.replace(/,/g, '');
     }
   }
 
   const amount = Number(normalizedAmount);
   if (isNaN(amount)) throw new Error('Invalid amount format');
-  return amount;
+  return isPositive ? Math.abs(amount) : amount;
 }
 
 function tryParseDate(value: string, format?: string): Date | null {
@@ -194,15 +202,50 @@ function transformRow(
     
     let amount = 0;
     if (amountColumn.includes('|')) {
-      // Handle split amount columns (e.g., "Entrate|Uscite" for Fineco)
-      const [positiveCol, negativeCol] = amountColumn.split('|');
-      const positiveAmount = row[positiveCol] ? parseAmount(row[positiveCol]) : 0;
-      const negativeAmount = row[negativeCol] ? -Math.abs(parseAmount(row[negativeCol])) : 0;
-      amount = positiveAmount + negativeAmount;
+      // Handle split amount columns
+      const [creditCol, debitCol] = amountColumn.split('|');
+      console.log('Processing split columns:', {
+        credit: row[creditCol],
+        debit: row[debitCol],
+      });
+      
+      // Handle credit amount (positive)
+      const creditAmount = row[creditCol] && row[creditCol].trim() !== '' 
+        ? Math.abs(parseAmount(row[creditCol])) 
+        : 0;
+      
+      // Handle debit amount (negative)
+      const debitAmount = row[debitCol] && row[debitCol].trim() !== '' 
+        ? parseAmount(row[debitCol]) 
+        : 0;
+
+      amount = creditAmount + debitAmount;
+      console.log('Final amount:', { creditAmount, debitAmount, total: amount });
     } else {
+      // Handle base amount column
       const amountValue = row[amountColumn];
-      if (!amountValue) throw new Error('Amount is required');
-      amount = parseAmount(amountValue);
+      
+      // Check for credit column in customConfig
+      const creditColumn = config.customConfig?.creditColumn;
+      if (creditColumn && row[creditColumn] && row[creditColumn].trim() !== '') {
+        // Use credit amount if present (ensure it's positive)
+        const creditAmount = parseAmount(row[creditColumn]);
+        amount = Math.abs(creditAmount); // Force positive for credit amounts
+        console.log('Processing credit amount:', {
+          raw: row[creditColumn],
+          parsed: creditAmount,
+          final: amount,
+        });
+      } else if (amountValue && amountValue.trim() !== '') {
+        // Use debit amount (already negative in Sella's case)
+        amount = parseAmount(amountValue);
+        console.log('Processing debit amount:', {
+          raw: amountValue,
+          parsed: amount,
+        });
+      } else {
+        throw new Error('Amount is required');
+      }
     }
 
     // Get merchant and notes

@@ -31,6 +31,25 @@ Implementation: `src/lib/import/banks/fineco.ts`
 - Semicolon delimiter
 - Windows-1252 encoding support
 
+### Banca Sella (Beta)
+Implementation: `src/lib/import/banks/sella.ts`
+- CSV format support
+- Default column mappings:
+  - Data operazione: Transaction date
+  - Descrizione: Transaction description
+  - Debito: Expense amount (negative values)
+  - Credito: Income amount (positive values with + sign)
+  - Etichette: Notes
+- Euro currency
+- Special handling:
+  - Automatic handling of dual amount columns (Credito/Debito)
+  - Supports transactions with duplicate IDs (e.g., transfer + commission)
+  - Properly processes positive amounts with + sign
+  - Skips balance summary row
+- Requirements:
+  - UTF-8 encoding required
+  - CSV export from Banca Sella online banking
+
 ## Import Process
 
 ### 1. File Upload
