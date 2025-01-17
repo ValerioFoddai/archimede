@@ -33,4 +33,8 @@ export interface ImportConfig {
   dateFormat: string;
   bankId?: string;
   skipRows?: number; // Number of rows to skip before starting to parse data
+  customConfig?: {
+    creditColumn?: string; // For banks with separate credit/debit columns
+    [key: string]: any; // Allow other custom configurations
+  };
 }

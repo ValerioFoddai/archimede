@@ -3,6 +3,7 @@ import { ImportSelectionPage } from './selection';
 import { CustomImportPage } from './custom';
 import { HypeImportPage } from './hype';
 import { FinecoImportPage } from './fineco';
+import { SellaImportPage } from './sella';
 
 export function ImportPage() {
   return (
@@ -11,6 +12,7 @@ export function ImportPage() {
       <Route path="custom" element={<CustomImportPage />} />
       <Route path="hype" element={<HypeImportPage />} />
       <Route path="fineco" element={<FinecoImportPage />} />
+      <Route path="banca-sella" element={<SellaImportPage />} />
       <Route path="*" element={<Navigate to="/transactions/import" replace />} />
     </Routes>
   );

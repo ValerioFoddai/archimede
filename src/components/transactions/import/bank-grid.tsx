@@ -28,9 +28,16 @@ export function BankGrid({ banks, loading, selectedBankId, onSelect }: BankGridP
     );
   }
 
+  // Sort banks alphabetically but keep Custom CSV Import at the end
+  const sortedBanks = [...banks].sort((a, b) => {
+    if (a.id === 'custom-csv') return 1;
+    if (b.id === 'custom-csv') return -1;
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-      {banks.map((bank) => (
+      {sortedBanks.map((bank) => (
         <Bank
           key={bank.id}
           bank={bank}

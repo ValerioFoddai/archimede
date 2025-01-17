@@ -6,6 +6,7 @@ This documentation provides a comprehensive guide to the Archimede application, 
 
 - [Project Structure](./project-structure.md)
 - [Key Features](./key-features.md)
+- [Expense Categories & Subcategories](./expense-categories.md)
 - [Import Transactions Flow](./import-transactions.md)
 - [Recent Issues & Fixes](./recent-issues.md)
 - [UI & Navigation](./ui-navigation.md)
