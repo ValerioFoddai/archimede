@@ -16,6 +16,7 @@ import { TestTablePage } from './pages/test-table';
 import { AnalyticsPage } from './pages/analytics';
 import { BudgetsPage } from './pages/budgets';
 import { Toaster } from './components/ui/toaster';
+import ProductNewsPage from './pages/product-news';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -45,6 +46,7 @@ function AppRoutes() {
       <Route path="/transactions/import/*" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
       <Route path="/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
+      <Route path="/product-news" element={<ProtectedRoute><ProductNewsPage /></ProtectedRoute>} />
       
       <Route path="/settings" element={<ProtectedRoute><SettingsLayout /></ProtectedRoute>}>
         <Route index element={<SettingsPage />} />
