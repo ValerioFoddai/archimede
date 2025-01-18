@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSidebar } from './sidebar-context';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 interface SidebarItemProps {
   icon: LucideIcon;
@@ -33,8 +33,13 @@ export function SidebarItem({ icon: Icon, name, href }: SidebarItemProps) {
 
   if (!isExpanded) {
     return (
-      <Tooltip content={name} side="right">
-        {link}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {link}
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          {name}
+        </TooltipContent>
       </Tooltip>
     );
   }

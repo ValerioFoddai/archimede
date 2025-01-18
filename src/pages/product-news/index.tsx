@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react"
+import { useEffect, useRef } from "react"
 import { Megaphone } from "lucide-react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { useProductNews } from "@/hooks/useProductNews"
