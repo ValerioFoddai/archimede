@@ -1,4 +1,5 @@
-import { Bell, ChevronDown, User } from 'lucide-react';
+import { ChevronDown, User } from 'lucide-react';
+import { ProductNewsIcon } from '@/components/ui/product-news-icon';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import {
@@ -114,9 +115,7 @@ export function TopNav() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-          </Button>
+          <ProductNewsIcon />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
