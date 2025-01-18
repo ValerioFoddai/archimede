@@ -62,6 +62,38 @@ This document tracks all features and changes implemented in Archimede. It serve
 - Session management
 - Data privacy controls
 
+## Product News Feature (January 2024)
+
+### UI Components
+- Megaphone icon in top navigation bar
+- Red dot indicator for unread updates
+- Dedicated product news page with infinite scrolling
+- Version badges (patch/minor/major) for each release
+
+### Core Functionality
+- Static news data management in src/data/product-news.ts
+- Local storage for tracking viewed status per user
+- Infinite loading with 5 items per page
+- Automatic marking of news as read when viewing
+
+### Implementation Details
+- React components:
+  * ProductNewsIcon: Navigation bar icon with unread indicator
+  * ProductNewsPage: Main page with infinite scroll
+- Hooks:
+  * useProductNews: State management and pagination
+- Data Storage:
+  * Local storage for view state
+  * Static TypeScript file for news data
+  * Version tracking for unread status
+
+### User Experience
+- Clean single scrollbar interface
+- Smooth infinite loading
+- Clear version categorization
+- Detailed feature descriptions
+- Chronological ordering of updates
+
 ## Notes for Documentation
 When documenting features:
 1. Be specific about capabilities (e.g., "bulk delete" not "bulk editing")
