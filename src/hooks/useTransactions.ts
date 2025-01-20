@@ -38,17 +38,6 @@ export function useTransactions(timeRange?: TimeRange) {
 
     console.log('Getting date filter for timeRange:', timeRange);
 
-    if (timeRange === '7d') {
-      const endDate = new Date();
-      const startDate = subDays(endDate, 7);
-      const filter = {
-        start: format(startDate, 'yyyy-MM-dd'),
-        end: format(endDate, 'yyyy-MM-dd')
-      };
-      console.log('Last 7 days filter:', filter);
-      return filter;
-    }
-
     const match = timeRange.match(/month-(\d{4})-(\d{2})/);
     if (match) {
       const [_, year, month] = match;

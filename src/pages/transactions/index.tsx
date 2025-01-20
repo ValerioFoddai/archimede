@@ -21,7 +21,12 @@ import { useTransactionRules } from '@/hooks/useTransactionRules';
 import type { Transaction, TransactionFormData } from '@/types/transactions';
 
 export function TransactionsPage() {
-  const [timeRange, setTimeRange] = useState<string>('7d');
+  const [timeRange, setTimeRange] = useState<string>(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `month-${year}-${month}`;
+  });
   const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules, refresh } = useTransactions(timeRange);
   const { rules } = useTransactionRules();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);

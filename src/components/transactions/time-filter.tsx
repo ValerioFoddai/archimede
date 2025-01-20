@@ -20,13 +20,6 @@ function generateTimeRanges() {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
 
-  // Add "Last 7 days" option at the top
-  ranges.push({
-    value: '7d',
-    label: 'Last 7 days',
-    isRecent: true
-  });
-
   // Add 12 months starting from current month
   for (let i = 0; i < 12; i++) {
     let month = currentMonth - i;
@@ -76,8 +69,7 @@ export function TimeFilter({ value, onChange }: TimeFilterProps) {
               key={range.value}
               className={cn(
                 "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                value === range.value && "bg-accent",
-                range.isRecent && "border-b border-border"
+                value === range.value && "bg-accent"
               )}
               onClick={() => onChange(range.value)}
             >
