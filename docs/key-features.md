@@ -22,7 +22,6 @@ Located in `src/components/transactions/columns-visibility/`:
 - Persistent settings per user
 - Real-time UI updates
 - Toggleable columns:
-  - Bank
   - Category
   - Tags
   - Notes
@@ -36,7 +35,6 @@ The transaction form (`src/components/transactions/transaction-form/`) provides:
 - Category selection
 - Tag management
 - Notes field
-- Bank selection
 
 ## Expense Categories
 
