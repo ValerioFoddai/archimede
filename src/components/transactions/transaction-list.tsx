@@ -18,7 +18,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useExpenseCategories } from '@/hooks/useExpenseCategories';
-import { useBanks } from '@/hooks/useBanks';
 import { useTags } from '@/hooks/useTags';
 import { formatDisplayAmount } from '@/lib/format';
 import type { Transaction } from '@/types/transactions';
@@ -50,7 +49,6 @@ export function TransactionList({
   // Debug log to track visibility state
   console.log('Column Visibility:', columnVisibility);
   const { categories } = useExpenseCategories();
-  const { banks } = useBanks();
   const { tags } = useTags();
 
   if (loading || preferencesLoading) {
@@ -82,7 +80,6 @@ export function TransactionList({
                 />
               </TableHead>
               <TableHead>Date</TableHead>
-              {columnVisibility.bank && <TableHead>Bank</TableHead>}
               <TableHead>Merchant</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               {columnVisibility.category && <TableHead>Category</TableHead>}
@@ -93,7 +90,6 @@ export function TransactionList({
           </TableHeader>
           <TableBody>
             {transactions.map((transaction) => {
-              const bank = transaction.bankId ? banks.find((b) => b.id === transaction.bankId) : null;
               const mainCategory = categories.find(
                 (c) => c.id === transaction.mainCategoryId
               );
@@ -118,9 +114,6 @@ export function TransactionList({
                     <TableCell>
                       {format(transaction.date, 'MMM d, yyyy')}
                     </TableCell>
-                    {columnVisibility.bank && (
-                      <TableCell>{bank?.name}</TableCell>
-                    )}
                     <TableCell>{transaction.merchant}</TableCell>
                     <TableCell className="text-right">
                       {(() => {
