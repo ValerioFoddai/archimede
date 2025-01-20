@@ -25,7 +25,7 @@ interface RawTransaction {
   transaction_tags: TransactionTag[];
 }
 
-export type TimeRange = string; // Format: '7d' for last 7 days or 'month-YYYY-MM' for specific month
+export type TimeRange = string; // Format: 'month-YYYY-MM' for specific month (e.g., month-2024-03)
 
 export function useTransactions(timeRange?: TimeRange) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);

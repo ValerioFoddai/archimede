@@ -16,18 +16,11 @@ export function filterTransactionsByTimeRange(
   let startDate: Date;
   let endDate: Date | undefined;
 
-  if (timeRange === '7d') {
-    startDate = subDays(now, 7);
-  } else if (timeRange.startsWith('month-')) {
-    // Parse month range (format: month-YYYY-MM)
-    const [, year, month] = timeRange.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    startDate = startOfMonth(date);
-    endDate = endOfMonth(date);
-  } else {
-    // Default to last 7 days if unknown time range
-    startDate = subDays(now, 7);
-  }
+  // Parse month range (format: month-YYYY-MM)
+  const [, year, month] = timeRange.split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 1);
+  startDate = startOfMonth(date);
+  endDate = endOfMonth(date);
 
   return transactions.filter(transaction => {
     const transactionDate = new Date(transaction.date);
