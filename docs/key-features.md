@@ -8,6 +8,10 @@
 - Categorization with expense categories
 - Tag-based organization
 - Notes and merchant information
+- Advanced date filtering:
+  - Monthly selection
+  - Custom date range with visual calendar
+  - Intuitive range selection interface
 - Date and amount tracking
 - Multi-currency support
 - Customizable column visibility with persistence
@@ -89,7 +93,11 @@ Located in `src/pages/analytics/`:
 - Expense category breakdown
 - Monthly comparisons
 - Trend analysis
-- Custom date ranges
+- Advanced date filtering:
+  - Monthly period selection
+  - Interactive date range picker
+  - Visual range selection calendar
+  - Consistent interface with transactions
 
 ### Visualization Components
 - Cash flow charts
