@@ -1,8 +1,25 @@
 import { ProductNews } from '@/types/product-news'
 
-export const LATEST_VERSION = '1.2.0'
+export const LATEST_VERSION = '1.3.0'
 
 export const productNews: ProductNews[] = [
+  {
+    id: '3',
+    version: '1.3.0',
+    versionType: 'minor',
+    title: 'Enhanced Date Filter Experience',
+    description: 'Improved date filtering with an intuitive single-calendar interface for selecting custom date ranges.',
+    changes: [
+      'Unified calendar interface for selecting date ranges in both Transactions and Analytics',
+      'Visual date range selection with interactive highlighting',
+      'Simplified custom date range selection with a single calendar view',
+      'Automatic date range validation and correction',
+      'Consistent experience across all sections of the application',
+      'Improved monthly selection options alongside custom ranges'
+    ],
+    createdAt: '2024-01-24T00:00:00Z',
+    publishedAt: '2024-01-24T00:00:00Z'
+  },
   {
     id: '2',
     version: '1.2.0',

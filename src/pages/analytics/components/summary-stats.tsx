@@ -3,7 +3,7 @@ import { formatDisplayAmount } from '../../../lib/format';
 import { filterTransactionsByTimeRange } from '../../../lib/analytics';
 import { useExpenseCategories } from '../../../hooks/useExpenseCategories';
 import type { Transaction } from '../../../types/transactions';
-import type { TimeRange } from '../index';
+import type { TimeRange } from '../../../types/transactions';
 
 interface SummaryStatsProps {
   transactions: Transaction[];
@@ -95,15 +95,7 @@ export function SummaryStats({ transactions, timeRange }: SummaryStatsProps) {
 }
 
 function calculateAverageMonthlySpending(totalSpending: number, timeRange: TimeRange): number {
-  if (timeRange === '7d') {
-    // For 7 days, extrapolate to a month
-    return (totalSpending / 7) * 30;
-  } else if (timeRange.startsWith('month-')) {
-    // For monthly views, the total is already the monthly amount
-    return totalSpending;
-  }
-  
-  // Default case
+  // For monthly views, the total is already the monthly amount
   return totalSpending;
 }
 

@@ -3,7 +3,7 @@ import { Chart, registerables } from 'chart.js';
 import { useExpenseCategories } from '@/hooks/useExpenseCategories';
 import { filterTransactionsByTimeRange } from '@/lib/analytics';
 import type { Transaction } from '@/types/transactions';
-import type { TimeRange } from '../index';
+import type { TimeRange } from '../../../types/transactions';
 
 Chart.register(...registerables);
 

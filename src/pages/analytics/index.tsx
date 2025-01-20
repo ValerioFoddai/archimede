@@ -17,15 +17,15 @@ import { useTransactions } from '../../hooks/useTransactions';
 import { useEventEmitter, TRANSACTION_UPDATED } from '@/lib/events';
 import { useExpenseCategories } from '../../hooks/useExpenseCategories';
 
-// Format: month-YYYY-MM (e.g., month-2024-03 for March 2024)
-type MonthRange = `month-${number}-${string}`;
-
-export type TimeRange = 
-  | '7d'           // Last 7 days
-  | MonthRange;    // Specific month selection (e.g., month-2024-03)
+import type { TimeRange } from '@/types/transactions';
 
 export function AnalyticsPage() {
-  const [timeRange, setTimeRange] = useState<TimeRange>('7d');
+  const [timeRange, setTimeRange] = useState<TimeRange>(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `month-${year}-${month}`;
+  });
   const [selectedCategory, setSelectedCategory] = useState<number>();
   const { transactions, loading: transactionsLoading, refresh: refreshTransactions } = useTransactions();
   const { categories, loading: categoriesLoading } = useExpenseCategories();
