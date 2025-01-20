@@ -70,9 +70,9 @@ export function TransactionList({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="border rounded-md">
-        <Table>
+    <div className="-mx-6 relative">
+      <div className="border-x bg-background relative">
+        <Table className="relative">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[30px]">
