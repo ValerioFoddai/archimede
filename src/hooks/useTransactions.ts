@@ -25,7 +25,7 @@ interface RawTransaction {
   transaction_tags: TransactionTag[];
 }
 
-export type TimeRange = string; // Format: 'month-YYYY-MM' for specific month (e.g., month-2024-03)
+import type { TimeRange } from '../types/transactions';
 
 export function useTransactions(timeRange?: TimeRange) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -38,15 +38,28 @@ export function useTransactions(timeRange?: TimeRange) {
 
     console.log('Getting date filter for timeRange:', timeRange);
 
-    const match = timeRange.match(/month-(\d{4})-(\d{2})/);
-    if (match) {
-      const [_, year, month] = match;
+    // Handle month range (format: month-YYYY-MM)
+    const monthMatch = timeRange.match(/^month-(\d{4})-(\d{2})$/);
+    if (monthMatch) {
+      const [_, year, month] = monthMatch;
       const date = new Date(parseInt(year), parseInt(month) - 1);
       const filter = {
         start: format(startOfMonth(date), 'yyyy-MM-dd'),
         end: format(endOfMonth(date), 'yyyy-MM-dd')
       };
       console.log('Monthly filter:', filter);
+      return filter;
+    }
+
+    // Handle custom date range (format: custom-YYYY-MM-DD-YYYY-MM-DD)
+    const customMatch = timeRange.match(/^custom-(\d{4}-\d{2}-\d{2})-(\d{4}-\d{2}-\d{2})$/);
+    if (customMatch) {
+      const [_, start, end] = customMatch;
+      const filter = {
+        start,
+        end
+      };
+      console.log('Custom date filter:', filter);
       return filter;
     }
 

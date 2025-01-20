@@ -17,10 +17,7 @@ import { useTransactions } from '../../hooks/useTransactions';
 import { useEventEmitter, TRANSACTION_UPDATED } from '@/lib/events';
 import { useExpenseCategories } from '../../hooks/useExpenseCategories';
 
-// Format: month-YYYY-MM (e.g., month-2024-03 for March 2024)
-type MonthRange = `month-${number}-${string}`;
-
-export type TimeRange = MonthRange;    // Specific month selection (e.g., month-2024-03)
+import type { TimeRange } from '@/types/transactions';
 
 export function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>(() => {

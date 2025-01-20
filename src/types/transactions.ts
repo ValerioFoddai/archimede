@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-export type TimeRange = string; // Format: 'month-YYYY-MM' for specific month (e.g., month-2024-03)
+export type TimeRange = 
+  | `month-${string}` // Format: month-YYYY-MM for specific month (e.g., month-2024-03)
+  | `custom-${string}-${string}`; // Format: custom-YYYY-MM-DD-YYYY-MM-DD for custom date range
 
 export const transactionSchema = z.object({
   bankId: z.string().optional(),

@@ -3,7 +3,7 @@ import { formatDisplayAmount } from '../../../lib/format';
 import { filterTransactionsByTimeRange } from '../../../lib/analytics';
 import { useExpenseCategories } from '../../../hooks/useExpenseCategories';
 import type { Transaction } from '../../../types/transactions';
-import type { TimeRange } from '../index';
+import type { TimeRange } from '../../../types/transactions';
 
 interface SummaryStatsProps {
   transactions: Transaction[];

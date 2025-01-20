@@ -18,10 +18,10 @@ import {
 import { TransactionForm } from '@/components/transactions/transaction-form';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useTransactionRules } from '@/hooks/useTransactionRules';
-import type { Transaction, TransactionFormData } from '@/types/transactions';
+import type { Transaction, TransactionFormData, TimeRange } from '@/types/transactions';
 
 export function TransactionsPage() {
-  const [timeRange, setTimeRange] = useState<string>(() => {
+  const [timeRange, setTimeRange] = useState<TimeRange>(() => {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
