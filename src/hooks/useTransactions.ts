@@ -13,7 +13,6 @@ interface TransactionTag {
 
 interface RawTransaction {
   id: string;
-  bank_id: string | null;
   date: string;
   merchant: string;
   amount: number;
@@ -108,7 +107,6 @@ export function useTransactions(timeRange?: TimeRange) {
 
       const transformedData = (data as RawTransaction[]).map(transaction => ({
         id: transaction.id,
-        bankId: transaction.bank_id || undefined,
         date: new Date(transaction.date),
         merchant: transaction.merchant,
         amount: transaction.amount,
@@ -325,7 +323,6 @@ export function useTransactions(timeRange?: TimeRange) {
       
       const transactionData = {
         user_id: user.id,
-        bank_id: data.bankId || null,
         date: formattedDate,
         merchant: data.merchant,
         amount: parseFloat(data.amount),
@@ -384,7 +381,6 @@ export function useTransactions(timeRange?: TimeRange) {
       const formattedDate = format(data.date, 'yyyy-MM-dd');
       
       const transactionData = {
-        bank_id: data.bankId || null,
         date: formattedDate,
         merchant: data.merchant,
         amount: parseFloat(data.amount),

@@ -15,7 +15,6 @@ import { useTags } from "@/hooks/useTags";
 import { format } from "date-fns";
 
 export interface TransactionFilters {
-  bankIds: string[];
   categoryIds: number[];
   tagIds: string[];
   amountMin?: number;
@@ -30,7 +29,6 @@ interface DataFilterProps {
 
 export function DataFilter({ value, onChange }: DataFilterProps) {
   const { categories } = useExpenseCategories();
-  const { banks } = useBanks();
   const { tags } = useTags();
 
   // Generate last 12 months options
@@ -44,7 +42,6 @@ export function DataFilter({ value, onChange }: DataFilterProps) {
   });
 
   const activeFiltersCount = [
-    value.bankIds.length > 0,
     value.categoryIds.length > 0,
     value.tagIds.length > 0,
     value.amountMin !== undefined || value.amountMax !== undefined,
@@ -91,35 +88,6 @@ export function DataFilter({ value, onChange }: DataFilterProps) {
                   {value.month === month.value && (
                     <Check className="h-4 w-4" />
                   )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Banks */}
-          <div className="space-y-2">
-            <Label>Banks</Label>
-            <div className="grid gap-2">
-              {banks.map((bank) => (
-                <div key={bank.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`bank-${bank.id}`}
-                    checked={value.bankIds.includes(bank.id)}
-                    onCheckedChange={(checked) => {
-                      onChange({
-                        ...value,
-                        bankIds: checked
-                          ? [...value.bankIds, bank.id]
-                          : value.bankIds.filter((id) => id !== bank.id),
-                      });
-                    }}
-                  />
-                  <Label
-                    htmlFor={`bank-${bank.id}`}
-                    className="text-sm font-normal"
-                  >
-                    {bank.name}
-                  </Label>
                 </div>
               ))}
             </div>
@@ -250,7 +218,6 @@ export function DataFilter({ value, onChange }: DataFilterProps) {
               className="w-full"
               onClick={() =>
                 onChange({
-                  bankIds: [],
                   categoryIds: [],
                   tagIds: [],
                   amountMin: undefined,

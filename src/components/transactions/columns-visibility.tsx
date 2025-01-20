@@ -13,7 +13,6 @@ import { useColumnPreferences } from "@/hooks/useColumnPreferences";
 import type { ColumnVisibility } from "@/types/transactions";
 
 const columns = [
-  { key: "bank" as const, label: "Bank" },
   { key: "category" as const, label: "Category" },
   { key: "tags" as const, label: "Tags" },
   { key: "notes" as const, label: "Notes" },
