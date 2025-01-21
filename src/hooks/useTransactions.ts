@@ -11,6 +11,20 @@ interface TransactionTag {
   tag_id: string;
 }
 
+interface BankInfo {
+  name: string;
+}
+
+interface UserBankAccount {
+  id: number;
+  account_name: string;
+  bank: BankInfo;
+}
+
+interface TransactionBankAccount {
+  user_bank_accounts: UserBankAccount;
+}
+
 interface RawTransaction {
   id: string;
   date: string;
@@ -22,6 +36,7 @@ interface RawTransaction {
   user_id: string;
   created_at: string;
   transaction_tags: TransactionTag[];
+  transaction_bank_accounts: TransactionBankAccount[];
 }
 
 import type { TimeRange } from '../types/transactions';
@@ -77,6 +92,15 @@ export function useTransactions(timeRange?: TimeRange) {
           *,
           transaction_tags (
             tag_id
+          ),
+          transaction_bank_accounts!left (
+            user_bank_accounts (
+              id,
+              account_name,
+              bank:banks (
+                name
+              )
+            )
           )
         `)
         .eq('user_id', user.id);
@@ -116,6 +140,13 @@ export function useTransactions(timeRange?: TimeRange) {
         notes: transaction.notes || undefined,
         userId: transaction.user_id,
         createdAt: transaction.created_at,
+        bankAccount: transaction.transaction_bank_accounts?.[0]?.user_bank_accounts ? {
+          id: transaction.transaction_bank_accounts[0].user_bank_accounts.id.toString(),
+          account_name: transaction.transaction_bank_accounts[0].user_bank_accounts.account_name,
+          bank: {
+            name: transaction.transaction_bank_accounts[0].user_bank_accounts.bank.name
+          }
+        } : undefined
       }));
 
       setTransactions(transformedData);
@@ -331,6 +362,7 @@ export function useTransactions(timeRange?: TimeRange) {
         notes: data.notes || null,
       };
 
+      // Create transaction
       const { data: transaction, error: transactionError } = await supabase
         .from('user_transactions')
         .insert([transactionData])
@@ -338,6 +370,19 @@ export function useTransactions(timeRange?: TimeRange) {
         .single();
 
       if (transactionError) throw transactionError;
+
+      // Associate bank account if provided
+      if (data.bankAccountId) {
+        const { error: bankAccountError } = await supabase
+          .from('transaction_bank_accounts')
+          .insert([{
+            transaction_id: transaction.id,
+            user_bank_accounts_id: parseInt(data.bankAccountId)
+          }]);
+
+        if (bankAccountError) throw bankAccountError;
+      }
+
 
       if (data.tagIds?.length) {
         const { error: tagsError } = await supabase
@@ -389,6 +434,7 @@ export function useTransactions(timeRange?: TimeRange) {
         notes: data.notes || null,
       };
 
+      // Update transaction
       const { error: transactionError } = await supabase
         .from('user_transactions')
         .update(transactionData)
@@ -396,6 +442,25 @@ export function useTransactions(timeRange?: TimeRange) {
         .eq('user_id', user.id);
 
       if (transactionError) throw transactionError;
+
+      // Update bank account association
+      const { error: deleteError } = await supabase
+        .from('transaction_bank_accounts')
+        .delete()
+        .eq('transaction_id', id);
+
+      if (deleteError) throw deleteError;
+
+      if (data.bankAccountId) {
+        const { error: bankAccountError } = await supabase
+          .from('transaction_bank_accounts')
+          .insert([{
+            transaction_id: id,
+            user_bank_accounts_id: parseInt(data.bankAccountId)
+          }]);
+
+        if (bankAccountError) throw bankAccountError;
+      }
 
       await supabase
         .from('transaction_tags')

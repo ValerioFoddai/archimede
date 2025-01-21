@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BankAccountSelect } from './bank-account-select';
 import { DateInput } from './date-input';
 import { MerchantInput } from './merchant-input';
 import { AmountInput } from './amount-input';
@@ -23,6 +24,7 @@ export function TransactionForm({ transaction, onSubmit, onCancel, isSubmitting 
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       date: transaction?.date || new Date(),
+      bankAccountId: transaction?.bankAccount?.id?.toString() || '',
       merchant: transaction?.merchant || '',
       amount: transaction?.amount ? transaction.amount.toString() : '',
       mainCategoryId: transaction?.mainCategoryId,
@@ -43,7 +45,7 @@ export function TransactionForm({ transaction, onSubmit, onCancel, isSubmitting 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
           <DateInput control={form.control} />
-
+          <BankAccountSelect control={form.control} />
           <MerchantInput control={form.control} />
           <AmountInput control={form.control} />
           

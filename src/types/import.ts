@@ -6,6 +6,7 @@ export interface TransactionImport {
   status: 'pending' | 'success' | 'error' | 'duplicate';
   errors: string[];
   bank_id?: string;
+  bank_account_id?: string;
 }
 
 export interface ImportSummary {

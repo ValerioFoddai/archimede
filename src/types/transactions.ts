@@ -8,6 +8,7 @@ export const transactionSchema = z.object({
   date: z.date({
     required_error: 'Please select a date',
   }),
+  bankAccountId: z.string().optional(),
   merchant: z.string().min(1, 'Merchant name is required'),
   amount: z.string().min(1, 'Amount is required').regex(/^-?\d*\.?\d{0,2}$/, {
     message: 'Please enter a valid amount',
@@ -37,9 +38,17 @@ export interface Transaction {
   notes?: string;
   userId: string;
   createdAt: string;
+  bankAccount?: {
+    id: string;
+    account_name: string;
+    bank: {
+      name: string;
+    };
+  };
 }
 
 export interface ColumnVisibility {
+  bankAccount: boolean;
   category: boolean;
   tags: boolean;
   notes: boolean;

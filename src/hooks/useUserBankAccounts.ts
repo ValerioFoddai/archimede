@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export interface UserBankAccount {
-  id: string;
+  id: number;
   user_id: string;
   bank_id: string;
   account_name: string;
@@ -78,19 +78,23 @@ export function useUserBankAccounts() {
         throw new Error('An account with this name already exists');
       }
 
-      const { error } = await supabase
+      const { data: newAccount, error } = await supabase
         .from('user_bank_accounts')
         .insert([
           {
             user_id: user.id,
             ...data,
           },
-        ]);
+        ])
+        .select()
+        .single();
 
       if (error) throw error;
 
       // Refresh accounts list
       await fetchAccounts();
+
+      return newAccount;
     } catch (err) {
       console.error('Error adding bank account:', err);
       throw err instanceof Error ? err : new Error('Failed to add bank account');

@@ -76,21 +76,44 @@ export function useImport() {
         
         return !isDuplicate;
       }).map(t => ({
-      user_id: user.id,
-      date: format(t.date, 'yyyy-MM-dd'),
-      merchant: t.merchant,
-      amount: t.amount,
-      notes: t.notes,
-      bank_id: t.bank_id,
+        user_id: user.id,
+        date: format(t.date, 'yyyy-MM-dd'),
+        merchant: t.merchant,
+        amount: t.amount,
+        notes: t.notes,
+        bank_id: t.bank_id,
       }));
 
       // Insert transactions
-      const { error: importError, data } = await supabase
+      const { error: importError, data: insertedTransactions } = await supabase
         .from('user_transactions')
         .insert(transactionsToInsert)
         .select();
 
-      if (importError) throw importError;
+      if (importError) {
+        console.error('Database error during transaction insert:', importError);
+        throw new Error(`Failed to import transactions: ${importError.message}`);
+      }
+
+      // Create transaction-bank account relationships if bank_account_id is provided
+      const transactionBankAccounts = validTransactions
+        .filter((t, index) => t.bank_account_id && index < insertedTransactions!.length)
+        .map((t, index) => ({
+          transaction_id: insertedTransactions![index].id,
+          user_bank_accounts_id: parseInt(t.bank_account_id!),
+          user_id: user.id
+        }));
+
+      if (transactionBankAccounts.length > 0) {
+        const { error: relationError } = await supabase
+          .from('transaction_bank_accounts')
+          .insert(transactionBankAccounts);
+
+        if (relationError) {
+          console.error('Error creating transaction-bank account relationships:', relationError);
+          throw new Error(`Failed to create bank account relationships: ${relationError.message}`);
+        }
+      }
 
       // Update the status of imported transactions
       transactions.forEach(t => {
@@ -99,7 +122,7 @@ export function useImport() {
         }
       });
 
-      return data?.length || 0;
+      return insertedTransactions?.length || 0;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to import transactions';
       setError(message);
