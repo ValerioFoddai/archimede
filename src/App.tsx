@@ -19,6 +19,7 @@ import { Toaster } from './components/ui/toaster';
 import ProductNewsPage from './pages/product-news';
 import { AssetsLayout } from './pages/assets/layout';
 import AccountsPage from './pages/assets/accounts';
+import TestPage from './pages/assets/test';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -52,6 +53,7 @@ function AppRoutes() {
       <Route path="/assets" element={<ProtectedRoute><AssetsLayout /></ProtectedRoute>}>
         <Route index element={<Navigate to="/assets/accounts" />} />
         <Route path="accounts" element={<AccountsPage />} />
+        <Route path="test" element={<TestPage />} />
       </Route>
       
       <Route path="/product-news" element={<ProtectedRoute><ProductNewsPage /></ProtectedRoute>} />
