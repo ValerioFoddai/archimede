@@ -14,8 +14,7 @@ interface BankAccountsTableProps {
 
 export function BankAccountsTable({ accounts }: BankAccountsTableProps) {
   return (
-    <div className="rounded-md border">
-      <Table>
+    <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Account Name</TableHead>
@@ -42,6 +41,5 @@ export function BankAccountsTable({ accounts }: BankAccountsTableProps) {
           )}
         </TableBody>
       </Table>
-    </div>
   );
 }

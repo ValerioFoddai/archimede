@@ -4,8 +4,8 @@ import { cn } from "../../lib/utils";
 
 const navigation = [
   {
-    name: "Accounts",
-    href: "/assets/accounts",
+    name: "Bank Accounts",
+    href: "/assets/bank-accounts",
     icon: Wallet,
   },
   {
@@ -23,7 +23,6 @@ export function AssetsSidebar() {
           <NavLink
             key={item.name}
             to={item.href}
-            end
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",

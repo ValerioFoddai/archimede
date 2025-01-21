@@ -18,7 +18,7 @@ import { BudgetsPage } from './pages/budgets';
 import { Toaster } from './components/ui/toaster';
 import ProductNewsPage from './pages/product-news';
 import { AssetsLayout } from './pages/assets/layout';
-import AccountsPage from './pages/assets/accounts';
+import BankAccountsPage from './pages/assets/bank-accounts';
 import TestPage from './pages/assets/test';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -51,8 +51,8 @@ function AppRoutes() {
       <Route path="/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
       
       <Route path="/assets" element={<ProtectedRoute><AssetsLayout /></ProtectedRoute>}>
-        <Route index element={<Navigate to="/assets/accounts" />} />
-        <Route path="accounts" element={<AccountsPage />} />
+        <Route index element={<Navigate to="/assets/bank-accounts" />} />
+        <Route path="bank-accounts" element={<BankAccountsPage />} />
         <Route path="test" element={<TestPage />} />
       </Route>
       
