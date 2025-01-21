@@ -122,6 +122,34 @@ Location: `src/pages/settings/`
 +-------------------------+
 ```
 
+### Assets Pages
+Location: `src/pages/assets/`
+```
++-------------------------+
+|    Assets Navigation   |
+|         Sidebar        |
++-------------------------+
+|                       |
+|    Assets Content     |
+|    - Accounts         |
+|    - Test             |
+|                       |
++-------------------------+
+```
+
+The Assets section follows the same layout pattern as Settings:
+- Sidebar navigation with icons (using Lucide React icons)
+- Active state highlighting
+- Consistent styling and spacing
+- Responsive layout adjustments
+
+Components:
+- Layout: `src/pages/assets/layout.tsx`
+- Sidebar: `src/components/layout/assets-sidebar.tsx`
+- Pages:
+  - Accounts: `src/pages/assets/accounts/index.tsx`
+  - Test: `src/pages/assets/test/index.tsx`
+
 ## Interactive Elements
 
 ### Transaction Forms

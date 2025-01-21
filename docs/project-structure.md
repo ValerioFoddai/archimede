@@ -17,6 +17,9 @@ src/
 │   └── validations/ # Form validation schemas
 ├── pages/           # Page components and routes
 │   ├── analytics/   # Analytics and reporting
+│   ├── assets/      # Asset management
+│   │   ├── accounts/# Account management
+│   │   └── test/    # Test page
 │   ├── budgets/     # Budget management
 │   ├── settings/    # Application settings
 │   └── transactions/# Transaction management
@@ -42,8 +45,8 @@ Components are organized by feature to maintain a scalable and maintainable code
 
 ### Core Components
 - `auth/`: Authentication forms and components
-- `layout/`: Application shell components (sidebar, navigation)
-- `ui/`: Reusable UI components (buttons, inputs, etc.)
+- `layout/`: Application shell components (sidebar, navigation, assets-sidebar)
+- `ui/`: Reusable UI components (buttons, inputs, separator, etc.)
 
 ### Feature Components
 - `transactions/`: Transaction management
