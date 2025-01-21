@@ -131,7 +131,7 @@ Location: `src/pages/assets/`
 +-------------------------+
 |                       |
 |    Assets Content     |
-|    - Accounts         |
+|    - Bank Accounts    |
 |    - Test             |
 |                       |
 +-------------------------+
@@ -147,8 +147,43 @@ Components:
 - Layout: `src/pages/assets/layout.tsx`
 - Sidebar: `src/components/layout/assets-sidebar.tsx`
 - Pages:
-  - Accounts: `src/pages/assets/accounts/index.tsx`
+  - Bank Accounts: `src/pages/assets/bank-accounts/index.tsx`
   - Test: `src/pages/assets/test/index.tsx`
+
+### Bank Accounts Section
+Location: `src/components/bank-accounts/`
+```
++-------------------------+
+|    Section Header      |
+|  Title + Add Button    |
++-------------------------+
+|                       |
+|   Bank Accounts Table |
+|   - Account Name      |
+|   - Bank Name         |
+|   - Balance          |
+|   - Description      |
+|   - Actions          |
+|                       |
++-------------------------+
+```
+
+Components:
+- Table: `bank-accounts-table.tsx`
+  - Responsive layout
+  - Edit/Delete actions
+  - Empty state handling
+- Dialogs:
+  - Add: `add-bank-account-dialog.tsx`
+  - Edit: `edit-bank-account-dialog.tsx`
+  - Delete: `delete-bank-account-dialog.tsx`
+
+Features:
+- Real-time updates
+- Loading states
+- Error handling
+- Toast notifications
+- Accessibility support
 
 ## Interactive Elements
 

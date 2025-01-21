@@ -6,6 +6,7 @@
 src/
 ├── components/         # React components organized by feature
 │   ├── auth/          # Authentication related components
+│   ├── bank-accounts/ # Bank account management components
 │   ├── expense-categories/
 │   ├── layout/        # App layout components (sidebar, navigation)
 │   ├── transactions/  # Transaction management components
@@ -18,7 +19,7 @@ src/
 ├── pages/           # Page components and routes
 │   ├── analytics/   # Analytics and reporting
 │   ├── assets/      # Asset management
-│   │   ├── accounts/# Account management
+│   │   ├── bank-accounts/# Bank account management
 │   │   └── test/    # Test page
 │   ├── budgets/     # Budget management
 │   ├── settings/    # Application settings
@@ -45,6 +46,11 @@ Components are organized by feature to maintain a scalable and maintainable code
 
 ### Core Components
 - `auth/`: Authentication forms and components
+- `bank-accounts/`: Bank account management
+  - `bank-accounts-table.tsx`: Account listing with edit/delete
+  - `add-bank-account-dialog.tsx`: Account creation
+  - `edit-bank-account-dialog.tsx`: Account editing
+  - `delete-bank-account-dialog.tsx`: Account deletion with confirmation
 - `layout/`: Application shell components (sidebar, navigation, assets-sidebar)
 - `ui/`: Reusable UI components (buttons, inputs, separator, etc.)
 
@@ -59,7 +65,8 @@ Components are organized by feature to maintain a scalable and maintainable code
 ## Custom Hooks
 
 Custom hooks encapsulate reusable logic:
-- `useBanks.ts`: Bank management
+- `useBanks.ts`: Bank list management
+- `useUserBankAccounts.ts`: Bank account operations (add/edit/delete)
 - `useTransactions.ts`: Transaction operations
 - `useExpenseCategories.ts`: Category management
 - `useImport.ts`: Import flow logic
@@ -69,6 +76,8 @@ Custom hooks encapsulate reusable logic:
 ## Database Structure
 
 The database schema is managed through Supabase migrations in the `supabase/migrations/` directory. Key tables include:
+- User Bank Accounts
+- Banks
 - Transactions
 - Expense Categories
 - User Tags
