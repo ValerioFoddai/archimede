@@ -122,6 +122,69 @@ Location: `src/pages/settings/`
 +-------------------------+
 ```
 
+### Assets Pages
+Location: `src/pages/assets/`
+```
++-------------------------+
+|    Assets Navigation   |
+|         Sidebar        |
++-------------------------+
+|                       |
+|    Assets Content     |
+|    - Bank Accounts    |
+|    - Test             |
+|                       |
++-------------------------+
+```
+
+The Assets section follows the same layout pattern as Settings:
+- Sidebar navigation with icons (using Lucide React icons)
+- Active state highlighting
+- Consistent styling and spacing
+- Responsive layout adjustments
+
+Components:
+- Layout: `src/pages/assets/layout.tsx`
+- Sidebar: `src/components/layout/assets-sidebar.tsx`
+- Pages:
+  - Bank Accounts: `src/pages/assets/bank-accounts/index.tsx`
+  - Test: `src/pages/assets/test/index.tsx`
+
+### Bank Accounts Section
+Location: `src/components/bank-accounts/`
+```
++-------------------------+
+|    Section Header      |
+|  Title + Add Button    |
++-------------------------+
+|                       |
+|   Bank Accounts Table |
+|   - Account Name      |
+|   - Bank Name         |
+|   - Balance          |
+|   - Description      |
+|   - Actions          |
+|                       |
++-------------------------+
+```
+
+Components:
+- Table: `bank-accounts-table.tsx`
+  - Responsive layout
+  - Edit/Delete actions
+  - Empty state handling
+- Dialogs:
+  - Add: `add-bank-account-dialog.tsx`
+  - Edit: `edit-bank-account-dialog.tsx`
+  - Delete: `delete-bank-account-dialog.tsx`
+
+Features:
+- Real-time updates
+- Loading states
+- Error handling
+- Toast notifications
+- Accessibility support
+
 ## Interactive Elements
 
 ### Transaction Forms
