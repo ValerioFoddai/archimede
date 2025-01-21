@@ -76,15 +76,41 @@ Custom hooks encapsulate reusable logic:
 ## Database Structure
 
 The database schema is managed through Supabase migrations in the `supabase/migrations/` directory. Key tables include:
-- User Bank Accounts
-- Banks
-- Transactions
-- Expense Categories
+
+### Core Tables
+- User Bank Accounts (user_bank_accounts)
+  - Stores user's bank account information
+  - Integer primary key
+  - Links to banks table and user profiles
+  - Includes account name, balance, and description
+
+- Banks (banks)
+  - Stores available banking institutions
+  - Text primary key
+  - Includes bank name and creation timestamp
+
+- Transactions (user_transactions)
+  - Stores user's financial transactions
+  - UUID primary key
+  - Links to categories, bank accounts, and user profiles
+  - Includes date, merchant, amount, and notes
+
+### Relationship Tables
+- Transaction Bank Accounts (transaction_bank_accounts)
+  - Maps transactions to bank accounts
+  - UUID primary key
+  - Links transactions (UUID) to bank accounts (Integer)
+  - Enforces referential integrity with CASCADE/RESTRICT rules
+  - Protected by Row Level Security for user data isolation
+
+### Supporting Tables
+- Expense Categories (main_expense_categories, sub_expense_categories)
 - User Tags
-- Import Mappings
 - Transaction Rules
 - Budgets
 - Column Preferences (columns_transactions)
+
+Each table implements Row Level Security (RLS) policies to ensure users can only access their own data. Foreign key constraints and indexes are used to maintain data integrity and query performance.
 
 ## Build Configuration
 
