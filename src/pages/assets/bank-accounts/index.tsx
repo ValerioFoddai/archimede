@@ -4,7 +4,7 @@ import { BankAccountsTable } from "@/components/bank-accounts/bank-accounts-tabl
 import { AddBankAccountDialog } from "@/components/bank-accounts/add-bank-account-dialog";
 
 export default function BankAccountsPage() {
-  const { accounts, loading, error, refresh } = useUserBankAccounts();
+  const { accounts, loading, error, refresh, updateAccount, deleteAccount } = useUserBankAccounts();
 
   if (error) {
     return (
@@ -28,7 +28,12 @@ export default function BankAccountsPage() {
         {loading ? (
           <div className="p-4 text-sm text-muted-foreground">Loading accounts...</div>
         ) : (
-          <BankAccountsTable accounts={accounts} />
+          <BankAccountsTable 
+            accounts={accounts}
+            onUpdate={updateAccount}
+            onDelete={deleteAccount}
+            onAccountModified={refresh}
+          />
         )}
       </Card>
     </div>
