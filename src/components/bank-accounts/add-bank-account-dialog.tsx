@@ -47,7 +47,10 @@ export function AddBankAccountDialog({ onAccountAdded }: AddBankAccountDialogPro
   const { toast } = useToast();
   const form = useForm<AddBankAccountFormData>({
     defaultValues: {
+      bank_id: "",
+      account_name: "",
       balance: "0",
+      description: "",
     },
   });
 

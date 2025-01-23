@@ -59,8 +59,8 @@ export function useUserBankAccounts() {
       query = query.neq('id', excludeId);
     }
 
-    const { data: existing } = await query.single();
-    return !!existing;
+    const { data: existing } = await query.maybeSingle();
+    return existing !== null;
   }
 
   async function addAccount(data: {
@@ -136,6 +136,15 @@ export function useUserBankAccounts() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
+      // First delete all transaction_bank_accounts records for this bank account
+      const { error: mappingError } = await supabase
+        .from('transaction_bank_accounts')
+        .delete()
+        .eq('user_bank_accounts_id', id);
+
+      if (mappingError) throw mappingError;
+
+      // Then delete the bank account
       const { error } = await supabase
         .from('user_bank_accounts')
         .delete()

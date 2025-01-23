@@ -57,8 +57,7 @@ export function DeleteBankAccountDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Bank Account</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete the account "{account.account_name}"? This action
-            cannot be undone if the account has no linked transactions.
+            Are you sure you want to delete the account "{account.account_name}"? This will remove the bank account association from any linked transactions, but the transactions themselves will remain in the system.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
