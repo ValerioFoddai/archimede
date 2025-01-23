@@ -60,11 +60,19 @@ export function TransactionsPage() {
 
   const handleFormSubmit = async (data: TransactionFormData) => {
     try {
+      console.log('Form submitted with data:', data);
+      console.log('Selected transaction:', selectedTransaction);
+
       if (selectedTransaction) {
-        await updateTransaction(selectedTransaction.id, data);
+        console.log('Updating transaction:', selectedTransaction.id);
+        const result = await updateTransaction(selectedTransaction.id, data);
+        console.log('Update result:', result);
       } else {
-        await createTransaction(data);
+        console.log('Creating new transaction');
+        const result = await createTransaction(data);
+        console.log('Create result:', result);
       }
+      
       setIsFormOpen(false);
       setSelectedTransaction(null);
     } catch (error) {

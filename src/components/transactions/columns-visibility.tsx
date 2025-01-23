@@ -14,6 +14,7 @@ import type { ColumnVisibility } from "@/types/transactions";
 
 const columns = [
   { key: "category" as const, label: "Category" },
+  { key: "bankAccount" as const, label: "Bank Account" },
   { key: "tags" as const, label: "Tags" },
   { key: "notes" as const, label: "Notes" },
 ];

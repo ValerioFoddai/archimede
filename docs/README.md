@@ -4,12 +4,20 @@
 
 This documentation provides a comprehensive guide to the Archimede application, its architecture, and key functionalities. Use the links below to navigate to specific sections:
 
-- [Project Structure](./project-structure.md)
+### User Documentation
 - [Key Features](./key-features.md)
-- [Expense Categories & Subcategories](./expense-categories.md)
-- [Import Transactions Flow](./import-transactions.md)
-- [Recent Issues & Fixes](./recent-issues.md)
 - [UI & Navigation](./ui-navigation.md)
+- [Import Transactions Flow](./import-transactions.md)
+- [Expense Categories & Subcategories](./expense-categories.md)
+
+### Technical Documentation
+- [Project Structure](./project-structure.md)
+- [Recent Issues & Fixes](./recent-issues.md)
+
+### Internal Documentation
+- [Transaction System](./internal/transaction-system.md) - Detailed overview of transaction management
+- [Transactions Page](./internal/transactions-page.md) - Page structure and component integration
+- [Bank Account Integration](./internal/bank-account-integration.md) - Bank account system details
 
 ## General Overview
 

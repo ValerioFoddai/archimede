@@ -8,6 +8,7 @@ export function useColumnPreferences() {
     category: true,
     tags: true,
     notes: true,
+    bankAccount: true,
   };
 
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(defaultVisibility);
