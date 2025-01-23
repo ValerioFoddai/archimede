@@ -22,19 +22,21 @@ interface BankAccountSelectProps {
 export function BankAccountSelect({ control }: BankAccountSelectProps) {
   const { accounts, loading } = useUserBankAccounts();
 
+  // Only show bank account select if there are accounts
+  if (accounts.length === 0) {
+    return null;
+  }
+
   return (
     <FormField
       control={control}
       name="bankAccountId"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Bank Account</FormLabel>
+          <FormLabel>Bank Account (Optional)</FormLabel>
           <Select
-            onValueChange={(value) => {
-              field.onChange(value === 'none' ? 'none' : parseInt(value));
-            }}
-            value={field.value?.toString() || 'none'}
-            defaultValue="none"
+            onValueChange={(value) => field.onChange(parseInt(value))}
+            value={field.value?.toString() || undefined}
             disabled={loading}
           >
             <FormControl>
@@ -43,7 +45,6 @@ export function BankAccountSelect({ control }: BankAccountSelectProps) {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="none">None</SelectItem>
               {accounts.map((account) => (
                 <SelectItem key={account.id} value={account.id.toString()}>
                   {account.account_name}

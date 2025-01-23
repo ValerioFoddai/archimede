@@ -149,7 +149,7 @@ export function useTransactions(timeRange?: TimeRange) {
       if (transactionError) throw transactionError;
 
       // Then create bank account association if selected
-      if (data.bankAccountId && data.bankAccountId !== 'none') {
+      if (data.bankAccountId) {
         const { error: bankAccountError } = await supabase
           .from('transaction_bank_accounts')
           .insert([{
@@ -228,7 +228,7 @@ export function useTransactions(timeRange?: TimeRange) {
         .delete()
         .eq('transaction_id', id);
 
-      if (data.bankAccountId && data.bankAccountId !== 'none') {
+      if (data.bankAccountId) {
         const { error: bankAccountError } = await supabase
           .from('transaction_bank_accounts')
           .insert([{
