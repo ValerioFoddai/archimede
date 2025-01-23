@@ -45,9 +45,6 @@ export function TransactionList({
   onBulkDelete,
 }: TransactionListProps) {
   const { columnVisibility, isLoading: preferencesLoading } = useColumnPreferences();
-
-  // Debug log to track visibility state
-  console.log('Column Visibility:', columnVisibility);
   const { categories } = useExpenseCategories();
   const { tags } = useTags();
 
