@@ -103,7 +103,7 @@ export function useTransactions(timeRange?: TimeRange) {
         subCategoryId: transaction.sub_category_id || undefined,
         tagIds: transaction.transaction_tags.map(tt => tt.tag_id),
         notes: transaction.notes || undefined,
-        bankAccountId: transaction.bank_account_id || undefined,
+        bankAccountId: transaction.bank_account_id ? parseInt(transaction.bank_account_id) : undefined,
         bankAccount: transaction.bank_account || undefined,
         userId: transaction.user_id,
         createdAt: transaction.created_at,
@@ -154,7 +154,7 @@ export function useTransactions(timeRange?: TimeRange) {
           .from('transaction_bank_accounts')
           .insert([{
             transaction_id: transaction.id,
-            bank_account_id: data.bankAccountId,
+            user_bank_accounts_id: data.bankAccountId,
           }]);
 
         if (bankAccountError) throw bankAccountError;
@@ -233,7 +233,7 @@ export function useTransactions(timeRange?: TimeRange) {
           .from('transaction_bank_accounts')
           .insert([{
             transaction_id: id,
-            bank_account_id: data.bankAccountId,
+            user_bank_accounts_id: data.bankAccountId,
           }]);
 
         if (bankAccountError) throw bankAccountError;

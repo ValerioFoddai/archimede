@@ -33,9 +33,10 @@ The transaction system in Archimede is built with a layered architecture that ha
    - Coordinates with child components for specific fields
 
 2. **Bank Account Select** (`bank-account-select.tsx`)
-   - Manages bank account selection
+   - Manages bank account selection with numeric IDs
    - Handles "None" option with 'none' value
-   - Uses Radix UI Select component
+   - Converts string values to numbers for database compatibility
+   - Uses Radix UI Select component with type-safe value handling
 
 3. **Category Select** (`category-select.tsx`)
    - Manages main and sub-category selection
@@ -138,13 +139,29 @@ The transaction system in Archimede is built with a layered architecture that ha
    ```typescript
    interface TransactionFormData {
      date: Date;
-     bankAccountId?: string;
+     bankAccountId?: number | 'none';  // Numeric ID for bank accounts
      merchant: string;
      amount: string;
      mainCategoryId?: number;
      subCategoryId?: number;
      tagIds?: string[];
      notes?: string;
+   }
+   ```
+
+2. **Bank Account Handling**
+   ```typescript
+   // Schema validation
+   bankAccountId: z.union([z.literal('none'), z.number()]).optional()
+
+   // Value transformation
+   onValueChange={(value) => {
+     field.onChange(value === 'none' ? 'none' : parseInt(value));
+   }}
+
+   // Database mapping
+   if (data.bankAccountId && data.bankAccountId !== 'none') {
+     user_bank_accounts_id: data.bankAccountId
    }
    ```
 

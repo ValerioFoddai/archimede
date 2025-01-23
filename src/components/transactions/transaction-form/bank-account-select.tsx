@@ -30,8 +30,10 @@ export function BankAccountSelect({ control }: BankAccountSelectProps) {
         <FormItem>
           <FormLabel>Bank Account</FormLabel>
           <Select
-            onValueChange={field.onChange}
-            value={field.value || 'none'}
+            onValueChange={(value) => {
+              field.onChange(value === 'none' ? 'none' : parseInt(value));
+            }}
+            value={field.value?.toString() || 'none'}
             defaultValue="none"
             disabled={loading}
           >
@@ -43,7 +45,7 @@ export function BankAccountSelect({ control }: BankAccountSelectProps) {
             <SelectContent>
               <SelectItem value="none">None</SelectItem>
               {accounts.map((account) => (
-                <SelectItem key={account.id} value={account.id}>
+                <SelectItem key={account.id} value={account.id.toString()}>
                   {account.account_name}
                 </SelectItem>
               ))}
