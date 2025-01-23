@@ -1,8 +1,9 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { DateInput } from './date-input';
 import { BankAccountSelect } from './bank-account-select';
 import { MerchantInput } from './merchant-input';
@@ -24,7 +25,7 @@ export function TransactionForm({ transaction, onSubmit, onCancel, isSubmitting 
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       date: transaction?.date || new Date(),
-      bankAccount: transaction?.bankAccount || '',
+      bankAccountId: transaction?.bankAccountId || '',
       merchant: transaction?.merchant || '',
       amount: transaction?.amount ? transaction.amount.toString() : '',
       mainCategoryId: transaction?.mainCategoryId,
@@ -34,12 +35,30 @@ export function TransactionForm({ transaction, onSubmit, onCancel, isSubmitting 
     },
   });
 
+  // Reset form when transaction changes
+  useEffect(() => {
+    console.log('Transaction changed:', transaction);
+    form.reset({
+      date: transaction?.date || new Date(),
+      bankAccountId: transaction?.bankAccountId || '',
+      merchant: transaction?.merchant || '',
+      amount: transaction?.amount ? transaction.amount.toString() : '',
+      mainCategoryId: transaction?.mainCategoryId,
+      subCategoryId: transaction?.subCategoryId,
+      tagIds: transaction?.tagIds || [],
+      notes: transaction?.notes || '',
+    });
+  }, [transaction, form]);
+
   return (
     <>
       <DialogHeader>
         <DialogTitle>
           {transaction ? 'Edit Transaction' : 'Add Transaction'}
         </DialogTitle>
+        <DialogDescription>
+          {transaction ? 'Edit the details of your transaction.' : 'Enter the details of your new transaction.'}
+        </DialogDescription>
       </DialogHeader>
 
       <Form {...form}>

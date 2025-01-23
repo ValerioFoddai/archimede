@@ -16,7 +16,7 @@ export const transactionSchema = z.object({
   subCategoryId: z.number().optional(),
   tagIds: z.array(z.string()).optional(),
   notes: z.string().max(500).optional(),
-  bankAccount: z.string().optional(),
+  bankAccountId: z.string().optional(),
 }).refine((data) => {
   return (data.mainCategoryId === undefined && data.subCategoryId === undefined) ||
          (data.mainCategoryId !== undefined && data.subCategoryId !== undefined);
@@ -36,7 +36,8 @@ export interface Transaction {
   subCategoryId?: number;
   tagIds?: string[];
   notes?: string;
-  bankAccount?: string;
+  bankAccountId?: string;
+  bankAccount?: string; // Display name from the view
   userId: string;
   createdAt: string;
 }

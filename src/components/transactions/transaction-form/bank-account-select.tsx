@@ -25,13 +25,14 @@ export function BankAccountSelect({ control }: BankAccountSelectProps) {
   return (
     <FormField
       control={control}
-      name="bankAccount"
+      name="bankAccountId"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Bank Account</FormLabel>
           <Select
             onValueChange={field.onChange}
-            value={field.value || ''}
+            value={field.value || 'none'}
+            defaultValue="none"
             disabled={loading}
           >
             <FormControl>
@@ -40,9 +41,9 @@ export function BankAccountSelect({ control }: BankAccountSelectProps) {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="none">None</SelectItem>
               {accounts.map((account) => (
-                <SelectItem key={account.id} value={account.account_name}>
+                <SelectItem key={account.id} value={account.id}>
                   {account.account_name}
                 </SelectItem>
               ))}

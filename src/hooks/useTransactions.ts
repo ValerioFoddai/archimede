@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { useToast } from './useToast';
 import { eventEmitter, TRANSACTION_UPDATED } from '@/lib/events';
-import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import type { TransactionFormData, Transaction } from '../types/transactions';
 
 interface TransactionTag {
@@ -21,6 +21,8 @@ interface RawTransaction {
   notes: string | null;
   user_id: string;
   created_at: string;
+  bank_account: string | null;
+  bank_account_id: string | null;
   transaction_tags: TransactionTag[];
 }
 
@@ -86,22 +88,9 @@ export function useTransactions(timeRange?: TimeRange) {
         query = query
           .gte('date', dateFilter.start)
           .lte('date', dateFilter.end);
-        console.log('Applied date filter to query:', {
-          filter: dateFilter,
-          timeRange,
-          start: dateFilter.start,
-          end: dateFilter.end
-        });
       }
 
       const { data, error } = await query.order('date', { ascending: false });
-      console.log('Fetched transactions:', {
-        count: data?.length,
-        timeRange,
-        dateFilter,
-        firstTransaction: data?.[0]?.date,
-        lastTransaction: data?.[data.length - 1]?.date
-      });
 
       if (error) throw error;
 
@@ -114,6 +103,8 @@ export function useTransactions(timeRange?: TimeRange) {
         subCategoryId: transaction.sub_category_id || undefined,
         tagIds: transaction.transaction_tags.map(tt => tt.tag_id),
         notes: transaction.notes || undefined,
+        bankAccountId: transaction.bank_account_id || undefined,
+        bankAccount: transaction.bank_account || undefined,
         userId: transaction.user_id,
         createdAt: transaction.created_at,
       }));
@@ -131,189 +122,6 @@ export function useTransactions(timeRange?: TimeRange) {
     }
   };
 
-  const applyTransactionRules = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-
-      console.log('Starting transaction rules automation...');
-
-      // Fetch all rules
-      const { data: rules, error: rulesError } = await supabase
-        .from('user_transactions_rules')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (rulesError) throw rulesError;
-      console.log('Fetched rules:', rules);
-
-      // Fetch all transactions
-      const { data: dbTransactions, error: transactionsError } = await supabase
-        .from('user_transactions')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (transactionsError) throw transactionsError;
-      console.log('Fetched transactions:', dbTransactions);
-
-      let updatedCount = 0;
-      const errors = [];
-
-      // Apply rules to transactions
-      for (const transaction of dbTransactions) {
-        try {
-          // Skip already categorized transactions
-          if (transaction.main_category_id !== null) {
-            console.log('Skipping already categorized transaction:', transaction.merchant);
-            continue;
-          }
-
-          console.log('Processing uncategorized transaction:', {
-            merchant: transaction.merchant,
-            currentMainCategory: transaction.main_category_id,
-            currentSubCategory: transaction.sub_category_id
-          });
-
-          // Find matching rule
-          console.log('Looking for rules matching merchant:', transaction.merchant);
-          
-          let matchingRule = null;
-          for (const rule of rules) {
-            const merchantLower = transaction.merchant.toLowerCase().trim();
-            const keywordsLower = rule.keywords.toLowerCase().trim();
-            const isMatch = merchantLower.includes(keywordsLower);
-            
-            console.log('Checking rule:', {
-              keywords: rule.keywords,
-              merchant: transaction.merchant,
-              merchantLower,
-              keywordsLower,
-              isMatch,
-              mainCategory: rule.main_category,
-              subCategory: rule.sub_category
-            });
-
-            if (isMatch) {
-              console.log('Found matching rule:', rule);
-              matchingRule = rule;
-              break;
-            }
-          }
-
-          if (matchingRule) {
-            console.log('Processing matching rule:', matchingRule);
-
-            // Get main category
-            const { data: mainCategories, error: mainCatError } = await supabase
-              .from('main_expense_categories')
-              .select('id, name')
-              .ilike('name', matchingRule.main_category);
-
-            if (mainCatError) throw mainCatError;
-            if (!mainCategories?.length) {
-              console.error(`Main category not found: ${matchingRule.main_category}`);
-              continue;
-            }
-
-            const mainCategory = mainCategories[0];
-            console.log('Found main category:', mainCategory);
-
-            // Get sub category
-            const { data: subCategories, error: subCatError } = await supabase
-              .from('sub_expense_categories')
-              .select('id, name')
-              .eq('main_category_id', mainCategory.id)
-              .ilike('name', matchingRule.sub_category);
-
-            if (subCatError) throw subCatError;
-            if (!subCategories?.length) {
-              console.error(`Sub category not found: ${matchingRule.sub_category}`);
-              continue;
-            }
-
-            const subCategory = subCategories[0];
-            console.log('Found sub category:', subCategory);
-
-            console.log('Updating transaction:', {
-              transactionId: transaction.id,
-              merchant: transaction.merchant,
-              mainCategory: mainCategory.name,
-              mainCategoryId: mainCategory.id,
-              subCategory: subCategory.name,
-              subCategoryId: subCategory.id
-            });
-
-            // Update transaction
-            const { data: updatedTransaction, error: updateError } = await supabase
-              .from('user_transactions')
-              .update({
-                main_category_id: mainCategory.id,
-                sub_category_id: subCategory.id
-              })
-              .eq('id', transaction.id)
-              .eq('user_id', user.id)
-              .select()
-              .single();
-
-            if (updateError) {
-              console.error('Error updating transaction:', updateError);
-              throw updateError;
-            }
-
-            if (!updatedTransaction) {
-              throw new Error('Failed to update transaction - no data returned');
-            }
-            
-            console.log('Successfully updated transaction:', {
-              id: updatedTransaction.id,
-              merchant: updatedTransaction.merchant,
-              mainCategoryId: updatedTransaction.main_category_id,
-              subCategoryId: updatedTransaction.sub_category_id
-            });
-            updatedCount++;
-          }
-        } catch (error) {
-          console.error('Error processing transaction:', error);
-          errors.push(error);
-        }
-      }
-
-      // Show appropriate toast message
-      if (errors.length > 0) {
-        toast({
-          title: "Warning",
-          description: `Applied rules with ${errors.length} errors. Check console for details.`,
-          variant: "destructive",
-        });
-      } else if (updatedCount === 0) {
-        toast({
-          title: "Info",
-          description: "No matching rules found for uncategorized transactions.",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: `Successfully categorized ${updatedCount} transaction${updatedCount === 1 ? '' : 's'}.`,
-        });
-      }
-
-      // Refresh the transactions list
-      await fetchTransactions();
-      // Notify other components that transactions have been updated
-      eventEmitter.emit(TRANSACTION_UPDATED);
-    } catch (error) {
-      console.error('Error applying transaction rules:', error);
-      toast({
-        title: "Error",
-        description: "Failed to apply transaction rules",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const createTransaction = async (data: TransactionFormData): Promise<Transaction | null> => {
     if (!user) return null;
 
@@ -321,6 +129,7 @@ export function useTransactions(timeRange?: TimeRange) {
       setLoading(true);
       const formattedDate = format(data.date, 'yyyy-MM-dd');
       
+      // First create the transaction
       const transactionData = {
         user_id: user.id,
         date: formattedDate,
@@ -339,6 +148,19 @@ export function useTransactions(timeRange?: TimeRange) {
 
       if (transactionError) throw transactionError;
 
+      // Then create bank account association if selected
+      if (data.bankAccountId && data.bankAccountId !== 'none') {
+        const { error: bankAccountError } = await supabase
+          .from('transaction_bank_accounts')
+          .insert([{
+            transaction_id: transaction.id,
+            bank_account_id: data.bankAccountId,
+          }]);
+
+        if (bankAccountError) throw bankAccountError;
+      }
+
+      // Finally create tag associations
       if (data.tagIds?.length) {
         const { error: tagsError } = await supabase
           .from('transaction_tags')
@@ -380,6 +202,9 @@ export function useTransactions(timeRange?: TimeRange) {
       setLoading(true);
       const formattedDate = format(data.date, 'yyyy-MM-dd');
       
+      console.log('Updating transaction with data:', { id, ...data });
+      
+      // First update the transaction
       const transactionData = {
         date: formattedDate,
         merchant: data.merchant,
@@ -397,6 +222,24 @@ export function useTransactions(timeRange?: TimeRange) {
 
       if (transactionError) throw transactionError;
 
+      // Update bank account association
+      await supabase
+        .from('transaction_bank_accounts')
+        .delete()
+        .eq('transaction_id', id);
+
+      if (data.bankAccountId && data.bankAccountId !== 'none') {
+        const { error: bankAccountError } = await supabase
+          .from('transaction_bank_accounts')
+          .insert([{
+            transaction_id: id,
+            bank_account_id: data.bankAccountId,
+          }]);
+
+        if (bankAccountError) throw bankAccountError;
+      }
+
+      // Update tag associations
       await supabase
         .from('transaction_tags')
         .delete()
@@ -436,11 +279,140 @@ export function useTransactions(timeRange?: TimeRange) {
     }
   };
 
+  const applyTransactionRules = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+
+      // Fetch all rules
+      const { data: rules, error: rulesError } = await supabase
+        .from('user_transactions_rules')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (rulesError) throw rulesError;
+
+      // Fetch all transactions
+      const { data: dbTransactions, error: transactionsError } = await supabase
+        .from('user_transactions')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (transactionsError) throw transactionsError;
+
+      let updatedCount = 0;
+      const errors = [];
+
+      // Apply rules to transactions
+      for (const transaction of dbTransactions) {
+        try {
+          // Skip already categorized transactions
+          if (transaction.main_category_id !== null) {
+            continue;
+          }
+
+          // Find matching rule
+          let matchingRule = null;
+          for (const rule of rules) {
+            const merchantLower = transaction.merchant.toLowerCase().trim();
+            const keywordsLower = rule.keywords.toLowerCase().trim();
+            const isMatch = merchantLower.includes(keywordsLower);
+            
+            if (isMatch) {
+              matchingRule = rule;
+              break;
+            }
+          }
+
+          if (matchingRule) {
+            // Get main category
+            const { data: mainCategories, error: mainCatError } = await supabase
+              .from('main_expense_categories')
+              .select('id, name')
+              .ilike('name', matchingRule.main_category);
+
+            if (mainCatError) throw mainCatError;
+            if (!mainCategories?.length) {
+              console.error(`Main category not found: ${matchingRule.main_category}`);
+              continue;
+            }
+
+            const mainCategory = mainCategories[0];
+
+            // Get sub category
+            const { data: subCategories, error: subCatError } = await supabase
+              .from('sub_expense_categories')
+              .select('id, name')
+              .eq('main_category_id', mainCategory.id)
+              .ilike('name', matchingRule.sub_category);
+
+            if (subCatError) throw subCatError;
+            if (!subCategories?.length) {
+              console.error(`Sub category not found: ${matchingRule.sub_category}`);
+              continue;
+            }
+
+            const subCategory = subCategories[0];
+
+            // Update transaction
+            const { error: updateError } = await supabase
+              .from('user_transactions')
+              .update({
+                main_category_id: mainCategory.id,
+                sub_category_id: subCategory.id
+              })
+              .eq('id', transaction.id)
+              .eq('user_id', user.id);
+
+            if (updateError) throw updateError;
+            updatedCount++;
+          }
+        } catch (error) {
+          console.error('Error processing transaction:', error);
+          errors.push(error);
+        }
+      }
+
+      // Show appropriate toast message
+      if (errors.length > 0) {
+        toast({
+          title: "Warning",
+          description: `Applied rules with ${errors.length} errors. Check console for details.`,
+          variant: "destructive",
+        });
+      } else if (updatedCount === 0) {
+        toast({
+          title: "Info",
+          description: "No matching rules found for uncategorized transactions.",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `Successfully categorized ${updatedCount} transaction${updatedCount === 1 ? '' : 's'}.`,
+        });
+      }
+
+      await fetchTransactions();
+      eventEmitter.emit(TRANSACTION_UPDATED);
+    } catch (error) {
+      console.error('Error applying transaction rules:', error);
+      toast({
+        title: "Error",
+        description: "Failed to apply transaction rules",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deleteTransaction = async (id: string): Promise<boolean> => {
     if (!user || !id) return false;
 
     try {
       setLoading(true);
+      // Due to ON DELETE CASCADE, we only need to delete the transaction
       const { error } = await supabase
         .from('user_transactions')
         .delete()
@@ -470,7 +442,6 @@ export function useTransactions(timeRange?: TimeRange) {
     }
   };
 
-  // Ensure fetchTransactions is called when timeRange changes
   useEffect(() => {
     console.log('useEffect triggered with timeRange:', timeRange);
     fetchTransactions();
