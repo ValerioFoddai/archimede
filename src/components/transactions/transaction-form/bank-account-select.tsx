@@ -35,8 +35,8 @@ export function BankAccountSelect({ control }: BankAccountSelectProps) {
         <FormItem>
           <FormLabel>Bank Account (Optional)</FormLabel>
           <Select
-            onValueChange={(value) => field.onChange(parseInt(value))}
-            value={field.value?.toString() || undefined}
+            onValueChange={(value) => field.onChange(value)}
+            value={field.value === null ? undefined : field.value?.toString()}
             disabled={loading}
           >
             <FormControl>

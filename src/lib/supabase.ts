@@ -8,12 +8,38 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+// Create Supabase client with debug logging
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
   },
+  db: {
+    schema: 'public'
+  },
+  global: {
+    headers: {
+      'cache-control': 'no-cache'
+    }
+  }
+});
+
+// Add debug logging for database queries
+supabase.from('user_bank_accounts').select('*').then(({ data, error }) => {
+  console.log('Debug - Testing user_bank_accounts table access:', {
+    success: !error,
+    error: error?.message,
+    count: data?.length
+  });
+});
+
+supabase.from('banks').select('*').then(({ data, error }) => {
+  console.log('Debug - Testing banks table access:', {
+    success: !error,
+    error: error?.message,
+    count: data?.length
+  });
 });
 
 // Add connection check utility

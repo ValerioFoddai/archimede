@@ -31,7 +31,7 @@ interface EditBankAccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAccountUpdated: () => void;
-  onUpdate: (id: string, data: { account_name: string; balance: number; description?: string }) => Promise<void>;
+  onUpdate: (id: number, data: { account_name: string; balance: number; description?: string }) => Promise<void>;
 }
 
 export function EditBankAccountDialog({

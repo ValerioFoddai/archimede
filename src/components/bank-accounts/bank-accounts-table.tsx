@@ -15,8 +15,8 @@ import {
 
 interface BankAccountsTableProps {
   accounts: UserBankAccount[];
-  onUpdate: (id: string, data: { account_name: string; balance: number; description?: string }) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onUpdate: (id: number, data: { account_name: string; balance: number; description?: string }) => Promise<void>;
+  onDelete: (id: number) => Promise<void>;
   onAccountModified: () => void;
 }
 
@@ -28,6 +28,19 @@ export function BankAccountsTable({
 }: BankAccountsTableProps) {
   const [editAccount, setEditAccount] = useState<UserBankAccount | null>(null);
   const [deleteAccount, setDeleteAccount] = useState<UserBankAccount | null>(null);
+
+  // Log detailed account information
+  console.log('Bank Accounts Table:', {
+    accountsCount: accounts.length,
+    accounts: accounts.map(acc => ({
+      id: acc.id,
+      user_id: acc.user_id,
+      bank_id: acc.bank_id,
+      account_name: acc.account_name,
+      balance: acc.balance,
+      bank: acc.bank?.name
+    }))
+  });
   return (
     <>
       <Table>

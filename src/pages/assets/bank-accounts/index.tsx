@@ -6,6 +6,10 @@ import { AddBankAccountDialog } from "@/components/bank-accounts/add-bank-accoun
 export default function BankAccountsPage() {
   const { accounts, loading, error, refresh, updateAccount, deleteAccount } = useUserBankAccounts();
 
+  console.log('Bank Accounts Page - accounts:', accounts);
+  console.log('Bank Accounts Page - loading:', loading);
+  console.log('Bank Accounts Page - error:', error);
+
   if (error) {
     return (
       <div className="space-y-6">

@@ -61,6 +61,13 @@ export function AddBankAccountDialog({ onAccountAdded }: AddBankAccountDialogPro
         throw new Error("Invalid balance amount");
       }
 
+      console.log('Submitting bank account with data:', {
+        bank_id: data.bank_id,
+        account_name: data.account_name,
+        balance: balance,
+        description: data.description,
+      });
+
       await addAccount({
         bank_id: data.bank_id,
         account_name: data.account_name,

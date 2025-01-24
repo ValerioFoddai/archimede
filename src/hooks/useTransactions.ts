@@ -103,8 +103,8 @@ export function useTransactions(timeRange?: TimeRange) {
         subCategoryId: transaction.sub_category_id || undefined,
         tagIds: transaction.transaction_tags.map(tt => tt.tag_id),
         notes: transaction.notes || undefined,
-        bankAccountId: transaction.bank_account_id ? parseInt(transaction.bank_account_id) : undefined,
-        bankAccount: transaction.bank_account || undefined,
+        bankAccountId: transaction.bank_account_id,
+        bankAccount: transaction.bank_account,
         userId: transaction.user_id,
         createdAt: transaction.created_at,
       }));

@@ -25,7 +25,7 @@ export function TransactionForm({ transaction, onSubmit, onCancel, isSubmitting 
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       date: transaction?.date || new Date(),
-      bankAccountId: transaction?.bankAccountId || null,
+      bankAccountId: transaction?.bankAccountId ?? null,
       merchant: transaction?.merchant || '',
       amount: transaction?.amount ? transaction.amount.toString() : '',
       mainCategoryId: transaction?.mainCategoryId,
@@ -40,7 +40,7 @@ export function TransactionForm({ transaction, onSubmit, onCancel, isSubmitting 
     console.log('Transaction changed:', transaction);
     form.reset({
       date: transaction?.date || new Date(),
-      bankAccountId: transaction?.bankAccountId || null,
+      bankAccountId: transaction?.bankAccountId ?? null,
       merchant: transaction?.merchant || '',
       amount: transaction?.amount ? transaction.amount.toString() : '',
       mainCategoryId: transaction?.mainCategoryId,

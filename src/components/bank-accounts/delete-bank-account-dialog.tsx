@@ -17,7 +17,7 @@ interface DeleteBankAccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAccountDeleted: () => void;
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (id: number) => Promise<void>;
 }
 
 export function DeleteBankAccountDialog({ 

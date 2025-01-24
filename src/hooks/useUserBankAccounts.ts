@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export interface UserBankAccount {
-  id: string;
+  id: number;  // Changed from string to number since it's SERIAL in the database
   user_id: string;
   bank_id: string;
   account_name: string;
@@ -19,13 +19,55 @@ export function useUserBankAccounts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Clear any potentially cached data on mount
+  useEffect(() => {
+    setAccounts([]);
+    return () => {
+      setAccounts([]);
+    };
+  }, []);
+
   async function fetchAccounts() {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       
+      // Check authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('Auth check:', { user, error: authError });
+      
+      if (authError) throw new Error(`Authentication error: ${authError.message}`);
       if (!user) throw new Error('No user found');
 
+      // Verify database connection and table access
+      console.log('Database connection test:');
+      
+      // Test direct table access
+      const { data: rawData, error: rawError } = await supabase
+        .from('user_bank_accounts')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      console.log('Direct table query:', {
+        success: !rawError,
+        error: rawError?.message,
+        rawCount: rawData?.length,
+        rawData: rawData
+      });
+
+      // Test join with banks table
+      const { data: joinData, error: joinError } = await supabase
+        .from('user_bank_accounts')
+        .select('*, bank:banks(*)')
+        .eq('user_id', user.id);
+
+      console.log('Join query test:', {
+        success: !joinError,
+        error: joinError?.message,
+        joinCount: joinData?.length,
+        joinData: joinData
+      });
+
+      // Fetch actual accounts
       const { data, error } = await supabase
         .from('user_bank_accounts')
         .select(`
@@ -35,7 +77,29 @@ export function useUserBankAccounts() {
         .eq('user_id', user.id)
         .order('account_name');
 
-      if (error) throw error;
+      console.log('Final query result:', {
+        success: !error,
+        error: error?.message,
+        count: data?.length,
+        data: data
+      });
+
+      if (error) {
+        console.error('Database error fetching accounts:', error);
+        throw error;
+      }
+
+      // Log detailed account information
+      console.log('Database query result:', {
+        count: data?.length || 0,
+        accounts: data?.map(acc => ({
+          id: acc.id,
+          name: acc.account_name,
+          bank: acc.bank?.name,
+          balance: acc.balance
+        }))
+      });
+
       setAccounts(data || []);
     } catch (err) {
       console.error('Error fetching bank accounts:', err);
@@ -45,7 +109,7 @@ export function useUserBankAccounts() {
     }
   }
 
-  async function checkAccountNameExists(accountName: string, excludeId?: string) {
+  async function checkAccountNameExists(accountName: string, excludeId?: number) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No user found');
 
@@ -71,6 +135,7 @@ export function useUserBankAccounts() {
   }) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('Adding account for user:', user);
       
       if (!user) throw new Error('No user found');
 
@@ -78,16 +143,24 @@ export function useUserBankAccounts() {
         throw new Error('An account with this name already exists');
       }
 
-      const { error } = await supabase
+      console.log('Inserting bank account with data:', {
+        user_id: user.id,
+        ...data,
+      });
+
+      const { data: insertedData, error } = await supabase
         .from('user_bank_accounts')
         .insert([
           {
             user_id: user.id,
             ...data,
           },
-        ]);
+        ])
+        .select();
 
       if (error) throw error;
+
+      console.log('Inserted bank account:', insertedData);
 
       // Refresh accounts list
       await fetchAccounts();
@@ -101,7 +174,7 @@ export function useUserBankAccounts() {
     fetchAccounts();
   }, []);
 
-  async function updateAccount(id: string, data: {
+  async function updateAccount(id: number, data: {
     account_name: string;
     balance: number;
     description?: string;
@@ -131,7 +204,7 @@ export function useUserBankAccounts() {
     }
   }
 
-  async function deleteAccount(id: string) {
+  async function deleteAccount(id: number) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
