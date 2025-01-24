@@ -77,7 +77,6 @@ export function TransactionList({
                 />
               </TableHead>
               <TableHead>Date</TableHead>
-              {columnVisibility.bankAccount && <TableHead>Bank Account</TableHead>}
               <TableHead>Merchant</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               {columnVisibility.category && <TableHead>Category</TableHead>}
@@ -112,11 +111,6 @@ export function TransactionList({
                     <TableCell>
                       {format(transaction.date, 'MMM d, yyyy')}
                     </TableCell>
-                    {columnVisibility.bankAccount && (
-                      <TableCell>
-                        {transaction.bankAccount}
-                      </TableCell>
-                    )}
                     <TableCell>{transaction.merchant}</TableCell>
                     <TableCell className="text-right">
                       {(() => {

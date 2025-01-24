@@ -1,12 +1,14 @@
 import { Outlet } from 'react-router-dom';
 import { DashboardLayout } from '../../components/layout/dashboard-layout';
-import { AssetsSidebar } from '../../components/layout/assets-sidebar';
+// import { AssetsSidebar } from '../../components/layout/assets-sidebar';
 
 export function AssetsLayout() {
   return (
     <DashboardLayout>
       <div className="flex h-full gap-6">
+        {/* Sidebar temporarily hidden
         <AssetsSidebar />
+        */}
         <div className="flex-1 overflow-auto">
           <Outlet />
         </div>

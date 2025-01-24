@@ -21,8 +21,6 @@ interface RawTransaction {
   notes: string | null;
   user_id: string;
   created_at: string;
-  bank_account: string | null;
-  bank_account_id: string | null;
   transaction_tags: TransactionTag[];
 }
 
@@ -103,8 +101,6 @@ export function useTransactions(timeRange?: TimeRange) {
         subCategoryId: transaction.sub_category_id || undefined,
         tagIds: transaction.transaction_tags.map(tt => tt.tag_id),
         notes: transaction.notes || undefined,
-        bankAccountId: transaction.bank_account_id,
-        bankAccount: transaction.bank_account,
         userId: transaction.user_id,
         createdAt: transaction.created_at,
       }));
@@ -129,7 +125,7 @@ export function useTransactions(timeRange?: TimeRange) {
       setLoading(true);
       const formattedDate = format(data.date, 'yyyy-MM-dd');
       
-      // First create the transaction
+      // Create the transaction
       const transactionData = {
         user_id: user.id,
         date: formattedDate,
@@ -148,19 +144,7 @@ export function useTransactions(timeRange?: TimeRange) {
 
       if (transactionError) throw transactionError;
 
-      // Then create bank account association if selected
-      if (data.bankAccountId) {
-        const { error: bankAccountError } = await supabase
-          .from('transaction_bank_accounts')
-          .insert([{
-            transaction_id: transaction.id,
-            user_bank_accounts_id: data.bankAccountId,
-          }]);
-
-        if (bankAccountError) throw bankAccountError;
-      }
-
-      // Finally create tag associations
+      // Create tag associations
       if (data.tagIds?.length) {
         const { error: tagsError } = await supabase
           .from('transaction_tags')
@@ -204,7 +188,7 @@ export function useTransactions(timeRange?: TimeRange) {
       
       console.log('Updating transaction with data:', { id, ...data });
       
-      // First update the transaction
+      // Update the transaction
       const transactionData = {
         date: formattedDate,
         merchant: data.merchant,
@@ -221,23 +205,6 @@ export function useTransactions(timeRange?: TimeRange) {
         .eq('user_id', user.id);
 
       if (transactionError) throw transactionError;
-
-      // Update bank account association
-      await supabase
-        .from('transaction_bank_accounts')
-        .delete()
-        .eq('transaction_id', id);
-
-      if (data.bankAccountId) {
-        const { error: bankAccountError } = await supabase
-          .from('transaction_bank_accounts')
-          .insert([{
-            transaction_id: id,
-            user_bank_accounts_id: data.bankAccountId,
-          }]);
-
-        if (bankAccountError) throw bankAccountError;
-      }
 
       // Update tag associations
       await supabase

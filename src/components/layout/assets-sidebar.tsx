@@ -1,17 +1,12 @@
 import { NavLink } from "react-router-dom";
-import { Wallet, TestTube } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 const navigation = [
   {
-    name: "Bank Accounts",
-    href: "/assets/bank-accounts",
-    icon: Wallet,
-  },
-  {
-    name: "Test",
+    name: "Assets",
     href: "/assets/test",
-    icon: TestTube,
+    icon: Wallet,
   },
 ];
 
