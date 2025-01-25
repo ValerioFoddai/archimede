@@ -13,6 +13,7 @@ interface TransactionHeaderProps {
   onTimeRangeChange: (range: TimeRange) => void;
   bankId?: string;
   onBankChange: (bankId: string | undefined) => void;
+  activeBankIds: string[];
   onRefresh: () => void;
 }
 
@@ -23,6 +24,7 @@ export function TransactionHeader({
   onTimeRangeChange,
   bankId,
   onBankChange,
+  activeBankIds,
   onRefresh,
 }: TransactionHeaderProps) {
   return (
@@ -35,7 +37,11 @@ export function TransactionHeader({
       </div>
       <div className="flex items-center gap-2">
         <TimeFilter value={timeRange} onChange={onTimeRangeChange} />
-        <BankFilter value={bankId} onChange={onBankChange} />
+        <BankFilter 
+          value={bankId} 
+          onChange={onBankChange}
+          activeBankIds={activeBankIds}
+        />
         <ColumnsVisibility onRefresh={onRefresh} />
         <Button variant="outline" size="icon" onClick={onApplyRules}>
           <Bot className="h-4 w-4" />

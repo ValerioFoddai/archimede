@@ -420,6 +420,12 @@ export function useTransactions(timeRange?: TimeRange, bankId?: string) {
     fetchTransactions();
   }, [user, timeRange, bankId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Get unique bank IDs from transactions
+  const uniqueBankIds = [...new Set(transactions
+    .map(t => t.bank_id)
+    .filter((id): id is string => id !== undefined && id !== null)
+  )];
+
   return {
     transactions,
     loading,
@@ -428,5 +434,6 @@ export function useTransactions(timeRange?: TimeRange, bankId?: string) {
     deleteTransaction,
     applyTransactionRules,
     refresh: fetchTransactions,
+    uniqueBankIds,
   };
 }

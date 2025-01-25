@@ -28,7 +28,7 @@ export function TransactionsPage() {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     return `month-${year}-${month}`;
   });
-  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules, refresh } = useTransactions(timeRange, bankId);
+  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules, refresh, uniqueBankIds } = useTransactions(timeRange, bankId);
   const { rules } = useTransactionRules();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -127,6 +127,7 @@ export function TransactionsPage() {
           onTimeRangeChange={setTimeRange}
           bankId={bankId}
           onBankChange={setBankId}
+          activeBankIds={uniqueBankIds}
           onRefresh={handleRefresh}
         />
         

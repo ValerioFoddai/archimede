@@ -11,13 +11,17 @@ import { useBanks } from "@/hooks/useBanks";
 interface BankFilterProps {
   value: string | undefined;
   onChange: (value: string | undefined) => void;
+  activeBankIds: string[];
 }
 
-export function BankFilter({ value, onChange }: BankFilterProps) {
+export function BankFilter({ value, onChange, activeBankIds }: BankFilterProps) {
   const { banks, loading } = useBanks();
 
-  // Only show filter if there are 2 or more banks
-  if (loading || banks.length < 2) {
+  // Filter banks to only show those that are present in transactions
+  const activeBanks = banks.filter(bank => activeBankIds.includes(bank.id));
+
+  // Only show filter if there are 2 or more active banks
+  if (loading || activeBanks.length < 2) {
     return null;
   }
 
@@ -53,7 +57,7 @@ export function BankFilter({ value, onChange }: BankFilterProps) {
           </div>
 
           {/* Individual banks */}
-          {banks.map((bank) => (
+          {activeBanks.map((bank) => (
             <div
               key={bank.id}
               className={cn(
