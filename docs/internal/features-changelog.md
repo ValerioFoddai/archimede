@@ -96,19 +96,19 @@ This document tracks all features and changes implemented in Archimede. It serve
 
 ## Transaction System Updates (January 2024)
 
-### Bank Column Removal
-- Removed bank association from transaction display and storage
-- Simplified transaction form by removing bank selection
-- Updated column preferences to remove bank visibility option
-- Removed bank-based filtering from transaction filters
-- Maintained bank selection in import process for format handling
+### Bank Column Updates (January 2024)
+- Added bank column to transaction list
+- Column positioned between Date and Merchant columns
+- Bank name displayed without "Import" suffix
+- Bank column toggleable through column visibility menu
+- Bank information preserved from import process
 - Migration path:
-  * Database schema updated to remove bank columns
-  * Existing bank associations dropped
-  * Column preferences automatically adjusted
-- Import functionality preserved:
-  * Users can still select banks during import for correct format parsing
-  * Bank information no longer stored after import completion
+  * Bank ID preserved in transactions table
+  * Bank names fetched from banks table
+  * Column preferences updated to include bank visibility
+- Import functionality:
+  * Bank selection during import determines displayed bank name
+  * Bank information stored with each transaction
 
 ## Assets Section Updates (January 2024)
 

@@ -21,7 +21,16 @@ The transactions page is the main interface for managing financial transactions 
    - Amount range filter
 
 3. **Transaction List**
-   - Sortable columns
+   - Column Order:
+     * Checkbox for selection
+     * Date
+     * Bank (toggleable)
+     * Merchant
+     * Amount
+     * Category (toggleable)
+     * Tags (toggleable)
+     * Notes (toggleable)
+     * Actions
    - Bulk selection
    - Individual row actions
    - Pagination (planned)
@@ -110,6 +119,16 @@ The transactions page is the main interface for managing financial transactions 
      timeRange: TimeRange;
      filters: FilterState;
      columnVisibility: ColumnVisibility;
+   }
+   ```
+
+   Column visibility includes:
+   ```typescript
+   interface ColumnVisibility {
+     category: boolean;
+     tags: boolean;
+     notes: boolean;
+     bank: boolean;
    }
    ```
 

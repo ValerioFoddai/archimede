@@ -4,14 +4,17 @@
 
 ## Current Status
 
-The bank account integration has been completely removed from the system:
-- Bank account column removed from transaction list
-- Bank account selection removed from transaction form
+The bank account management functionality has been removed, but bank information is still used in transactions:
 - Bank accounts page replaced with Assets placeholder
 - Database tables cleaned up:
   * Dropped transaction_bank_accounts table
   * Dropped user_bank_accounts table
   * Dropped user_bank_status view
+- Bank information in transactions:
+  * Bank ID preserved in transactions table
+  * Bank names displayed in transaction list (between Date and Merchant columns)
+  * Bank column is toggleable through column visibility settings
+  * Banks table maintained for import and display purposes
 
 ## Future Direction
 
