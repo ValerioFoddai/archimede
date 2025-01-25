@@ -27,7 +27,7 @@ interface RawTransaction {
 
 import type { TimeRange } from '../types/transactions';
 
-export function useTransactions(timeRange?: TimeRange) {
+export function useTransactions(timeRange?: TimeRange, bankId?: string) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -81,6 +81,10 @@ export function useTransactions(timeRange?: TimeRange) {
           )
         `)
         .eq('user_id', user.id);
+
+      if (bankId) {
+        query = query.eq('bank_id', bankId);
+      }
 
       const dateFilter = getDateFilter();
       if (dateFilter) {
@@ -414,7 +418,7 @@ export function useTransactions(timeRange?: TimeRange) {
   useEffect(() => {
     console.log('useEffect triggered with timeRange:', timeRange);
     fetchTransactions();
-  }, [user, timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, timeRange, bankId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     transactions,

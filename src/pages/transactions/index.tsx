@@ -21,13 +21,14 @@ import { useTransactionRules } from '@/hooks/useTransactionRules';
 import type { Transaction, TransactionFormData, TimeRange } from '@/types/transactions';
 
 export function TransactionsPage() {
+  const [bankId, setBankId] = useState<string>();
   const [timeRange, setTimeRange] = useState<TimeRange>(() => {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     return `month-${year}-${month}`;
   });
-  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules, refresh } = useTransactions(timeRange);
+  const { transactions, loading, createTransaction, updateTransaction, deleteTransaction, applyTransactionRules, refresh } = useTransactions(timeRange, bankId);
   const { rules } = useTransactionRules();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -124,6 +125,8 @@ export function TransactionsPage() {
           onApplyRules={() => setIsAutoRulesDialogOpen(true)}
           timeRange={timeRange}
           onTimeRangeChange={setTimeRange}
+          bankId={bankId}
+          onBankChange={setBankId}
           onRefresh={handleRefresh}
         />
         
