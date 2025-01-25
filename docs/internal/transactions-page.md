@@ -16,7 +16,6 @@ The transactions page is the main interface for managing financial transactions 
 
 2. **Filter Section**
    - Search input
-   - Bank account filter
    - Category filter
    - Tag filter
    - Amount range filter
@@ -60,7 +59,6 @@ The transactions page is the main interface for managing financial transactions 
 2. **Filter Management**
    - Time range filter (month/custom range)
    - Search text filter
-   - Bank account filter
    - Category filter
    - Tag filter
    - Amount range filter
@@ -119,7 +117,6 @@ The transactions page is the main interface for managing financial transactions 
    ```typescript
    interface FilterState {
      search: string;
-     bankAccounts: string[];
      categories: number[];
      tags: string[];
      amountRange: {
@@ -193,7 +190,7 @@ The transactions page is the main interface for managing financial transactions 
 
 ## Integration Points
 
-1. **Bank Import System**
+1. **Import System**
    - Import dialog integration
    - Format mapping
    - Duplicate detection

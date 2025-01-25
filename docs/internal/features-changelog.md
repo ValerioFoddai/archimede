@@ -110,6 +110,30 @@ This document tracks all features and changes implemented in Archimede. It serve
   * Users can still select banks during import for correct format parsing
   * Bank information no longer stored after import completion
 
+## Assets Section Updates (January 2024)
+
+### Placeholder Implementation
+- Created dedicated Assets section with "Coming Soon" status
+- Temporarily hidden sidebar while preserving code for future use
+- Added informative placeholder content:
+  * Clear messaging about upcoming features
+  * Visual elements including Wallet icon
+  * List of planned capabilities:
+    - Multiple asset type tracking
+    - Investment monitoring
+    - Performance analytics
+    - Comprehensive reporting
+- Migration path:
+  * Removed bank accounts page
+  * Dropped transaction_bank_accounts table
+  * Dropped user_bank_status view
+  * Preserved user_bank_accounts table for future use
+
+### Analytics Integration
+- Configured Vercel Analytics for proper development mode
+- Reduced console noise by disabling debug mode
+- Added environment-aware analytics configuration
+
 ## Notes for Documentation
 When documenting features:
 1. Be specific about capabilities (e.g., "bulk delete" not "bulk editing")
