@@ -22,6 +22,7 @@ interface RawTransaction {
   user_id: string;
   created_at: string;
   transaction_tags: TransactionTag[];
+  bank_id: string | null;
 }
 
 import type { TimeRange } from '../types/transactions';
@@ -103,6 +104,7 @@ export function useTransactions(timeRange?: TimeRange) {
         notes: transaction.notes || undefined,
         userId: transaction.user_id,
         createdAt: transaction.created_at,
+        bank_id: transaction.bank_id || undefined,
       }));
 
       setTransactions(transformedData);

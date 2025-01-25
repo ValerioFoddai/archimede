@@ -37,10 +37,12 @@ export interface Transaction {
   notes?: string;
   userId: string;
   createdAt: string;
+  bank_id?: string;
 }
 
 export interface ColumnVisibility {
   category: boolean;
   tags: boolean;
   notes: boolean;
+  bank: boolean;
 }

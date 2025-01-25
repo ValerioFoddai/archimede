@@ -16,6 +16,7 @@ const columns = [
   { key: "category" as const, label: "Category" },
   { key: "tags" as const, label: "Tags" },
   { key: "notes" as const, label: "Notes" },
+  { key: "bank" as const, label: "Bank" },
 ];
 
 interface ColumnsVisibilityProps {
