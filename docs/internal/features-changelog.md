@@ -126,8 +126,8 @@ This document tracks all features and changes implemented in Archimede. It serve
 - Migration path:
   * Removed bank accounts page
   * Dropped transaction_bank_accounts table
+  * Dropped user_bank_accounts table
   * Dropped user_bank_status view
-  * Preserved user_bank_accounts table for future use
 
 ### Analytics Integration
 - Configured Vercel Analytics for proper development mode

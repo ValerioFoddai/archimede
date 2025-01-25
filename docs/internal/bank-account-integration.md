@@ -4,14 +4,14 @@
 
 ## Current Status
 
-The bank account integration has been removed from the system:
+The bank account integration has been completely removed from the system:
 - Bank account column removed from transaction list
 - Bank account selection removed from transaction form
 - Bank accounts page replaced with Assets placeholder
 - Database tables cleaned up:
   * Dropped transaction_bank_accounts table
+  * Dropped user_bank_accounts table
   * Dropped user_bank_status view
-  * Preserved user_bank_accounts table for future use
 
 ## Future Direction
 
