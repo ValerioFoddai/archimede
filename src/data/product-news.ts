@@ -1,8 +1,25 @@
 import { ProductNews } from '@/types/product-news'
 
-export const LATEST_VERSION = '1.3.0'
+export const LATEST_VERSION = '1.4.0'
 
 export const productNews: ProductNews[] = [
+  {
+    id: '4',
+    version: '1.4.0',
+    versionType: 'minor',
+    title: 'Smart Bank Filter',
+    description: 'Added an intelligent bank filter that automatically adapts to your transaction data, making it easier to view transactions from specific banks.',
+    changes: [
+      'Smart bank filtering - Filter appears only when you have transactions from multiple banks',
+      'Context-aware bank options - Shows only banks that have associated transactions',
+      'Quick switching between "All Banks" and individual bank views',
+      'Clean interface - Filter automatically hides when not needed',
+      'Real-time updates - Transaction list updates instantly when changing bank filter',
+      'Improved organization - Easily track transactions from different bank accounts'
+    ],
+    createdAt: '2025-01-25T00:00:00Z',
+    publishedAt: '2025-01-25T00:00:00Z'
+  },
   {
     id: '3',
     version: '1.3.0',

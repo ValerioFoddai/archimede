@@ -96,6 +96,14 @@ This document tracks all features and changes implemented in Archimede. It serve
 
 ## Transaction System Updates (January 2024)
 
+### Bank Filter Enhancement (January 25, 2025)
+- Added smart bank filter to transaction list
+- Filter only appears when transactions from 2+ banks exist
+- Shows only banks that have associated transactions
+- Allows filtering between "All Banks" and individual banks
+- Updates transaction list automatically when bank is selected
+- Maintains clean interface by hiding filter when unnecessary
+
 ### Bank Column Updates (January 2024)
 - Added bank column to transaction list
 - Column positioned between Date and Merchant columns
