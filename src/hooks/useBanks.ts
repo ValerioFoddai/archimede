@@ -21,6 +21,7 @@ export function useBanks() {
           .order('name');
 
         if (error) throw error;
+        console.log('Available banks from database:', data);
         setBanks(data || []);
       } catch (err) {
         console.error('Error fetching banks:', err);

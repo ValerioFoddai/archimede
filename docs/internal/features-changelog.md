@@ -96,19 +96,51 @@ This document tracks all features and changes implemented in Archimede. It serve
 
 ## Transaction System Updates (January 2024)
 
-### Bank Column Removal
-- Removed bank association from transaction display and storage
-- Simplified transaction form by removing bank selection
-- Updated column preferences to remove bank visibility option
-- Removed bank-based filtering from transaction filters
-- Maintained bank selection in import process for format handling
+### Bank Filter Enhancement (January 25, 2025)
+- Added smart bank filter to transaction list
+- Filter only appears when transactions from 2+ banks exist
+- Shows only banks that have associated transactions
+- Allows filtering between "All Banks" and individual banks
+- Updates transaction list automatically when bank is selected
+- Maintains clean interface by hiding filter when unnecessary
+
+### Bank Column Updates (January 2024)
+- Added bank column to transaction list
+- Column positioned between Date and Merchant columns
+- Bank name displayed without "Import" suffix
+- Bank column toggleable through column visibility menu
+- Bank information preserved from import process
 - Migration path:
-  * Database schema updated to remove bank columns
-  * Existing bank associations dropped
-  * Column preferences automatically adjusted
-- Import functionality preserved:
-  * Users can still select banks during import for correct format parsing
-  * Bank information no longer stored after import completion
+  * Bank ID preserved in transactions table
+  * Bank names fetched from banks table
+  * Column preferences updated to include bank visibility
+- Import functionality:
+  * Bank selection during import determines displayed bank name
+  * Bank information stored with each transaction
+
+## Assets Section Updates (January 2024)
+
+### Placeholder Implementation
+- Created dedicated Assets section with "Coming Soon" status
+- Temporarily hidden sidebar while preserving code for future use
+- Added informative placeholder content:
+  * Clear messaging about upcoming features
+  * Visual elements including Wallet icon
+  * List of planned capabilities:
+    - Multiple asset type tracking
+    - Investment monitoring
+    - Performance analytics
+    - Comprehensive reporting
+- Migration path:
+  * Removed bank accounts page
+  * Dropped transaction_bank_accounts table
+  * Dropped user_bank_accounts table
+  * Dropped user_bank_status view
+
+### Analytics Integration
+- Configured Vercel Analytics for proper development mode
+- Reduced console noise by disabling debug mode
+- Added environment-aware analytics configuration
 
 ## Notes for Documentation
 When documenting features:

@@ -12,22 +12,39 @@ The transactions page is the main interface for managing financial transactions 
    - Add transaction button
    - Import transactions button
    - Time filter dropdown
+   - Bank filter dropdown (shows only when 2+ banks have transactions)
    - Column visibility settings
 
 2. **Filter Section**
    - Search input
-   - Bank account filter
    - Category filter
    - Tag filter
    - Amount range filter
 
 3. **Transaction List**
-   - Sortable columns
+   - Column Order:
+     * Checkbox for selection
+     * Date
+     * Bank (toggleable, shows bank name from transactions)
+     * Merchant
+     * Amount
+     * Category (toggleable)
+     * Tags (toggleable)
+     * Notes (toggleable)
+     * Actions
    - Bulk selection
    - Individual row actions
    - Pagination (planned)
 
 ## Component Integration
+
+### Bank Filter
+
+1. **Filter Behavior**
+   - Only appears when transactions exist from 2 or more banks
+   - Shows only banks that have associated transactions
+   - Allows filtering between "All Banks" and individual banks
+   - Updates transaction list automatically when bank is selected
 
 ### Transaction Dialog
 
@@ -49,18 +66,18 @@ The transactions page is the main interface for managing financial transactions 
 1. **Transaction Loading**
    ```typescript
    // Initial data load
-   const { transactions, loading } = useTransactions(timeRange);
+   const { transactions, loading, uniqueBankIds } = useTransactions(timeRange, bankId);
    
    // Refresh on filter changes
    useEffect(() => {
      // Fetch transactions with current filters
-   }, [timeRange, filters]);
+   }, [timeRange, bankId, filters]);
    ```
 
 2. **Filter Management**
    - Time range filter (month/custom range)
+   - Bank filter (active banks only)
    - Search text filter
-   - Bank account filter
    - Category filter
    - Tag filter
    - Amount range filter
@@ -110,8 +127,19 @@ The transactions page is the main interface for managing financial transactions 
    interface PageState {
      selectedIds: string[];
      timeRange: TimeRange;
+     bankId?: string;
      filters: FilterState;
      columnVisibility: ColumnVisibility;
+   }
+   ```
+
+   Column visibility includes:
+   ```typescript
+   interface ColumnVisibility {
+     category: boolean;
+     tags: boolean;
+     notes: boolean;
+     bank: boolean;
    }
    ```
 
@@ -119,7 +147,6 @@ The transactions page is the main interface for managing financial transactions 
    ```typescript
    interface FilterState {
      search: string;
-     bankAccounts: string[];
      categories: number[];
      tags: string[];
      amountRange: {
@@ -193,7 +220,7 @@ The transactions page is the main interface for managing financial transactions 
 
 ## Integration Points
 
-1. **Bank Import System**
+1. **Import System**
    - Import dialog integration
    - Format mapping
    - Duplicate detection

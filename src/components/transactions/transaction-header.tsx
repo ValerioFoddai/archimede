@@ -1,4 +1,5 @@
 import { Plus, Upload, Bot } from "lucide-react";
+import { BankFilter } from "./bank-filter";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ColumnsVisibility } from "./columns-visibility";
@@ -10,6 +11,9 @@ interface TransactionHeaderProps {
   onApplyRules: () => void;
   timeRange: TimeRange;
   onTimeRangeChange: (range: TimeRange) => void;
+  bankId?: string;
+  onBankChange: (bankId: string | undefined) => void;
+  activeBankIds: string[];
   onRefresh: () => void;
 }
 
@@ -18,6 +22,9 @@ export function TransactionHeader({
   onApplyRules,
   timeRange,
   onTimeRangeChange,
+  bankId,
+  onBankChange,
+  activeBankIds,
   onRefresh,
 }: TransactionHeaderProps) {
   return (
@@ -30,6 +37,11 @@ export function TransactionHeader({
       </div>
       <div className="flex items-center gap-2">
         <TimeFilter value={timeRange} onChange={onTimeRangeChange} />
+        <BankFilter 
+          value={bankId} 
+          onChange={onBankChange}
+          activeBankIds={activeBankIds}
+        />
         <ColumnsVisibility onRefresh={onRefresh} />
         <Button variant="outline" size="icon" onClick={onApplyRules}>
           <Bot className="h-4 w-4" />

@@ -21,14 +21,13 @@ interface RawTransaction {
   notes: string | null;
   user_id: string;
   created_at: string;
-  bank_account: string | null;
-  bank_account_id: string | null;
   transaction_tags: TransactionTag[];
+  bank_id: string | null;
 }
 
 import type { TimeRange } from '../types/transactions';
 
-export function useTransactions(timeRange?: TimeRange) {
+export function useTransactions(timeRange?: TimeRange, bankId?: string) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -83,6 +82,10 @@ export function useTransactions(timeRange?: TimeRange) {
         `)
         .eq('user_id', user.id);
 
+      if (bankId) {
+        query = query.eq('bank_id', bankId);
+      }
+
       const dateFilter = getDateFilter();
       if (dateFilter) {
         query = query
@@ -103,10 +106,9 @@ export function useTransactions(timeRange?: TimeRange) {
         subCategoryId: transaction.sub_category_id || undefined,
         tagIds: transaction.transaction_tags.map(tt => tt.tag_id),
         notes: transaction.notes || undefined,
-        bankAccountId: transaction.bank_account_id ? parseInt(transaction.bank_account_id) : undefined,
-        bankAccount: transaction.bank_account || undefined,
         userId: transaction.user_id,
         createdAt: transaction.created_at,
+        bank_id: transaction.bank_id || undefined,
       }));
 
       setTransactions(transformedData);
@@ -129,7 +131,7 @@ export function useTransactions(timeRange?: TimeRange) {
       setLoading(true);
       const formattedDate = format(data.date, 'yyyy-MM-dd');
       
-      // First create the transaction
+      // Create the transaction
       const transactionData = {
         user_id: user.id,
         date: formattedDate,
@@ -148,19 +150,7 @@ export function useTransactions(timeRange?: TimeRange) {
 
       if (transactionError) throw transactionError;
 
-      // Then create bank account association if selected
-      if (data.bankAccountId && data.bankAccountId !== 'none') {
-        const { error: bankAccountError } = await supabase
-          .from('transaction_bank_accounts')
-          .insert([{
-            transaction_id: transaction.id,
-            user_bank_accounts_id: data.bankAccountId,
-          }]);
-
-        if (bankAccountError) throw bankAccountError;
-      }
-
-      // Finally create tag associations
+      // Create tag associations
       if (data.tagIds?.length) {
         const { error: tagsError } = await supabase
           .from('transaction_tags')
@@ -204,7 +194,7 @@ export function useTransactions(timeRange?: TimeRange) {
       
       console.log('Updating transaction with data:', { id, ...data });
       
-      // First update the transaction
+      // Update the transaction
       const transactionData = {
         date: formattedDate,
         merchant: data.merchant,
@@ -221,23 +211,6 @@ export function useTransactions(timeRange?: TimeRange) {
         .eq('user_id', user.id);
 
       if (transactionError) throw transactionError;
-
-      // Update bank account association
-      await supabase
-        .from('transaction_bank_accounts')
-        .delete()
-        .eq('transaction_id', id);
-
-      if (data.bankAccountId && data.bankAccountId !== 'none') {
-        const { error: bankAccountError } = await supabase
-          .from('transaction_bank_accounts')
-          .insert([{
-            transaction_id: id,
-            user_bank_accounts_id: data.bankAccountId,
-          }]);
-
-        if (bankAccountError) throw bankAccountError;
-      }
 
       // Update tag associations
       await supabase
@@ -445,7 +418,13 @@ export function useTransactions(timeRange?: TimeRange) {
   useEffect(() => {
     console.log('useEffect triggered with timeRange:', timeRange);
     fetchTransactions();
-  }, [user, timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, timeRange, bankId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Get unique bank IDs from transactions
+  const uniqueBankIds = [...new Set(transactions
+    .map(t => t.bank_id)
+    .filter((id): id is string => id !== undefined && id !== null)
+  )];
 
   return {
     transactions,
@@ -455,5 +434,6 @@ export function useTransactions(timeRange?: TimeRange) {
     deleteTransaction,
     applyTransactionRules,
     refresh: fetchTransactions,
+    uniqueBankIds,
   };
 }

@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useExpenseCategories } from '@/hooks/useExpenseCategories';
 import { useTags } from '@/hooks/useTags';
+import { useBanks } from '@/hooks/useBanks';
 import { formatDisplayAmount } from '@/lib/format';
 import type { Transaction } from '@/types/transactions';
 import { useColumnPreferences } from '@/hooks/useColumnPreferences';
@@ -45,11 +46,9 @@ export function TransactionList({
   onBulkDelete,
 }: TransactionListProps) {
   const { columnVisibility, isLoading: preferencesLoading } = useColumnPreferences();
-
-  // Debug log to track visibility state
-  console.log('Column Visibility:', columnVisibility);
   const { categories } = useExpenseCategories();
   const { tags } = useTags();
+  const { banks } = useBanks();
 
   if (loading || preferencesLoading) {
     return (
@@ -80,7 +79,7 @@ export function TransactionList({
                 />
               </TableHead>
               <TableHead>Date</TableHead>
-              {columnVisibility.bankAccount && <TableHead>Bank Account</TableHead>}
+              {columnVisibility.bank && <TableHead>Bank</TableHead>}
               <TableHead>Merchant</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               {columnVisibility.category && <TableHead>Category</TableHead>}
@@ -115,9 +114,16 @@ export function TransactionList({
                     <TableCell>
                       {format(transaction.date, 'MMM d, yyyy')}
                     </TableCell>
-                    {columnVisibility.bankAccount && (
+                    {columnVisibility.bank && (
                       <TableCell>
-                        {transaction.bankAccount}
+                        {transaction.bank_id ? (
+                          <div className="text-sm text-muted-foreground">
+                            {(() => {
+                              const bank = banks.find(b => b.id === transaction.bank_id);
+                              return bank ? bank.name.replace(' Import', '') : 'Unknown Bank';
+                            })()}
+                          </div>
+                        ) : null}
                       </TableCell>
                     )}
                     <TableCell>{transaction.merchant}</TableCell>
