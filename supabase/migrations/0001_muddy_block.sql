@@ -26,8 +26,8 @@
 CREATE TABLE IF NOT EXISTS user_profiles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  first_name varchar(50) NOT NULL CHECK (char_length(first_name) >= 2),
-  last_name varchar(50) NOT NULL CHECK (char_length(last_name) >= 2),
+  first_name varchar(50) NOT NULL,
+  last_name varchar(50) NOT NULL,
   email varchar(255) NOT NULL UNIQUE,
   country varchar(100),
   city varchar(100),
@@ -80,14 +80,30 @@ CREATE TRIGGER update_user_profiles_updated_at
 -- Create function to handle new user creation
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  email_name text;
 BEGIN
-  INSERT INTO public.user_profiles (user_id, first_name, last_name, email)
-  VALUES (
-    NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'first_name', 'Unknown'),
-    COALESCE(NEW.raw_user_meta_data->>'last_name', 'Unknown'),
-    NEW.email
-  );
+  -- Extract name from email (part before @)
+  email_name := split_part(NEW.email, '@', 1);
+  
+  -- Try to update existing profile first
+  UPDATE public.user_profiles 
+  SET user_id = NEW.id,
+      first_name = email_name,
+      last_name = 'User'
+  WHERE email = NEW.email;
+  
+  -- If no rows were updated, insert new profile
+  IF NOT FOUND THEN
+    INSERT INTO public.user_profiles (user_id, first_name, last_name, email)
+    VALUES (
+      NEW.id,
+      email_name,  -- Use email name as first name
+      'User',      -- Default last name
+      NEW.email
+    );
+  END IF;
+  
   RETURN NEW;
 END;
 $$ language 'plpgsql';

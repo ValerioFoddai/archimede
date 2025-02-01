@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,18 +17,18 @@ import { Input } from '@/components/ui/input';
 import { signUpSchema, type SignUpFormData } from '@/lib/validations/auth';
 import { supabase } from '@/lib/supabase';
 import { AuthCard } from './auth-card';
-import { PasswordStrength } from './password-strength';
 
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: '',
-      fullName: '',
       password: '',
       confirmPassword: '',
     },
@@ -39,21 +39,34 @@ export function SignUpForm() {
       setIsLoading(true);
       setError(null);
 
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        options: {
-          data: {
-            full_name: data.fullName,
-          },
-        },
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        if (signUpError.message.includes('unique constraint')) {
+          setError('This email is already registered. Please try logging in instead.');
+        } else {
+          setError(signUpError.message);
+        }
+        return;
+      }
+
+      if (!signUpData.user) {
+        setError('Something went wrong. Please try again.');
+        return;
+      }
+
+      // Show success message and redirect
+      setError('Account created successfully! You can now log in.');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
       
-      navigate('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign up');
+      setError('An unexpected error occurred. Please try again.');
+      console.error('Signup error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -68,17 +81,6 @@ export function SignUpForm() {
             Enter your information to get started
           </p>
         </div>
-
-        {/* Google Sign Up temporarily removed
-        <SocialButton
-          onClick={signInWithGoogle}
-          icon={<img src="/google.svg" alt="Google" className="w-5 h-5" />}
-        >
-          Sign up with Google
-        </SocialButton>
-
-        <AuthDivider />
-        */}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -102,36 +104,32 @@ export function SignUpForm() {
 
             <FormField
               control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="John Doe" 
-                      autoComplete="name"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="password"
-                      autoComplete="new-password"
-                      {...field} 
-                    />
+                    <div className="relative">
+                      <Input 
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        {...field} 
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </FormControl>
-                  <PasswordStrength password={field.value} />
                   <FormMessage />
                 </FormItem>
               )}
@@ -144,11 +142,26 @@ export function SignUpForm() {
                 <FormItem>
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="password"
-                      autoComplete="new-password"
-                      {...field} 
-                    />
+                    <div className="relative">
+                      <Input 
+                        type={showConfirmPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        {...field} 
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
