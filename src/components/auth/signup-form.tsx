@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,18 +18,21 @@ import { Input } from '@/components/ui/input';
 import { signUpSchema, type SignUpFormData } from '@/lib/validations/auth';
 import { supabase } from '@/lib/supabase';
 import { AuthCard } from './auth-card';
+import { AuthDivider } from './auth-divider';
+import { SocialButton } from './social-button';
+import { PasswordStrength } from './password-strength';
 
 export function SignUpForm() {
+  const { signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const navigate = useNavigate();
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: '',
+      firstName: '',
+      lastName: '',
       password: '',
       confirmPassword: '',
     },
@@ -38,35 +42,21 @@ export function SignUpForm() {
     try {
       setIsLoading(true);
       setError(null);
-
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (signUpError) {
-        if (signUpError.message.includes('unique constraint')) {
-          setError('This email is already registered. Please try logging in instead.');
-        } else {
-          setError(signUpError.message);
-        }
-        return;
-      }
-
-      if (!signUpData.user) {
-        setError('Something went wrong. Please try again.');
-        return;
-      }
-
-      // Show success message and redirect
-      setError('Account created successfully! You can now log in.');
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
-      
+      await signUp(data.email, data.password, data.firstName, data.lastName);
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
       console.error('Signup error:', err);
+      if (err instanceof Error) {
+        // Handle specific error cases
+        if (err.message.includes('unique constraint')) {
+          setError('This email is already registered. Please try logging in instead.');
+        } else if (err.message.includes('rate limit')) {
+          setError('Too many signup attempts. Please try again later.');
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError('Failed to sign up. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -104,32 +94,54 @@ export function SignUpForm() {
 
             <FormField
               control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="John" 
+                      autoComplete="given-name"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Doe" 
+                      autoComplete="family-name"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input 
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        {...field} 
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
+                    <Input 
+                      type="password"
+                      autoComplete="new-password"
+                      {...field} 
+                    />
                   </FormControl>
+                  <PasswordStrength password={field.value} />
                   <FormMessage />
                 </FormItem>
               )}
@@ -142,26 +154,11 @@ export function SignUpForm() {
                 <FormItem>
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input 
-                        type={showConfirmPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        {...field} 
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
+                    <Input 
+                      type="password"
+                      autoComplete="new-password"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
