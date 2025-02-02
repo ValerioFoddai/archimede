@@ -16,10 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { signUpSchema, type SignUpFormData } from '@/lib/validations/auth';
-import { supabase } from '@/lib/supabase';
 import { AuthCard } from './auth-card';
-import { AuthDivider } from './auth-divider';
-import { SocialButton } from './social-button';
 import { PasswordStrength } from './password-strength';
 
 export function SignUpForm() {

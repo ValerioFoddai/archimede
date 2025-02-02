@@ -1,5 +1,4 @@
 import { 
-  subDays, 
   startOfMonth, 
   endOfMonth,
   isAfter,
@@ -12,7 +11,6 @@ export function filterTransactionsByTimeRange(
   transactions: Transaction[],
   timeRange: TimeRange
 ): Transaction[] {
-  const now = new Date();
   let startDate: Date;
   let endDate: Date | undefined;
 

@@ -10,7 +10,6 @@ import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { useExpenseCategories } from "@/hooks/useExpenseCategories";
-import { useBanks } from "@/hooks/useBanks";
 import { useTags } from "@/hooks/useTags";
 import { format } from "date-fns";
 

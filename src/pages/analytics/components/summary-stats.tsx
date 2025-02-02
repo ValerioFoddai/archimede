@@ -23,7 +23,7 @@ export function SummaryStats({ transactions, timeRange }: SummaryStatsProps) {
     .reduce((sum, t) => sum + t.amount, 0);
 
   // Calculate monthly average based on the time range
-  const averageMonthlySpending = calculateAverageMonthlySpending(totalSpending, timeRange);
+  const averageMonthlySpending = calculateAverageMonthlySpending(totalSpending);
 
   const topCategory = getTopCategory(filteredTransactions, categories);
 
@@ -94,7 +94,7 @@ export function SummaryStats({ transactions, timeRange }: SummaryStatsProps) {
   );
 }
 
-function calculateAverageMonthlySpending(totalSpending: number, timeRange: TimeRange): number {
+function calculateAverageMonthlySpending(totalSpending: number): number {
   // For monthly views, the total is already the monthly amount
   return totalSpending;
 }
