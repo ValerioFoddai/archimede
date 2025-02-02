@@ -62,6 +62,25 @@ This document tracks all features and changes implemented in Archimede. It serve
 - Session management
 - Data privacy controls
 
+### User Profile System Update (February 2025)
+- Improved user profile creation during signup
+- Automatic profile creation via database trigger with SECURITY DEFINER
+- First name and last name synchronization from auth metadata
+- Profile data structure:
+  * User ID linked to auth.users
+  * Email from signup
+  * First name and last name from raw_user_meta_data
+  * Additional profile fields optional
+- Database implementation:
+  * Secure trigger with explicit search_path
+  * Non-blocking error handling
+  * Automatic metadata extraction
+  * Permission-safe execution
+- Technical documentation:
+  * Detailed trigger implementation in auth-triggers.md
+  * Troubleshooting guides
+  * Security best practices
+
 ## Product News Feature (January 2024)
 
 ### UI Components

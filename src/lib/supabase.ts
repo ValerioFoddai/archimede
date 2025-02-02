@@ -25,27 +25,10 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Add debug logging for database queries
-supabase.from('user_bank_accounts').select('*').then(({ data, error }) => {
-  console.log('Debug - Testing user_bank_accounts table access:', {
-    success: !error,
-    error: error?.message,
-    count: data?.length
-  });
-});
-
-supabase.from('banks').select('*').then(({ data, error }) => {
-  console.log('Debug - Testing banks table access:', {
-    success: !error,
-    error: error?.message,
-    count: data?.length
-  });
-});
-
 // Add connection check utility
 export async function checkSupabaseConnection() {
   try {
-    const { error } = await supabase.from('user_tags').select('count');
+    const { error } = await supabase.auth.getSession();
     if (error) throw error;
     console.info('✅ Supabase connection successful');
     return true;

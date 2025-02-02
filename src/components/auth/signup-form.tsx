@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,18 +18,21 @@ import { Input } from '@/components/ui/input';
 import { signUpSchema, type SignUpFormData } from '@/lib/validations/auth';
 import { supabase } from '@/lib/supabase';
 import { AuthCard } from './auth-card';
+import { AuthDivider } from './auth-divider';
+import { SocialButton } from './social-button';
 import { PasswordStrength } from './password-strength';
 
 export function SignUpForm() {
+  const { signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: '',
-      fullName: '',
+      firstName: '',
+      lastName: '',
       password: '',
       confirmPassword: '',
     },
@@ -38,22 +42,21 @@ export function SignUpForm() {
     try {
       setIsLoading(true);
       setError(null);
-
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            full_name: data.fullName,
-          },
-        },
-      });
-
-      if (signUpError) throw signUpError;
-      
-      navigate('/dashboard');
+      await signUp(data.email, data.password, data.firstName, data.lastName);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign up');
+      console.error('Signup error:', err);
+      if (err instanceof Error) {
+        // Handle specific error cases
+        if (err.message.includes('unique constraint')) {
+          setError('This email is already registered. Please try logging in instead.');
+        } else if (err.message.includes('rate limit')) {
+          setError('Too many signup attempts. Please try again later.');
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError('Failed to sign up. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -68,17 +71,6 @@ export function SignUpForm() {
             Enter your information to get started
           </p>
         </div>
-
-        {/* Google Sign Up temporarily removed
-        <SocialButton
-          onClick={signInWithGoogle}
-          icon={<img src="/google.svg" alt="Google" className="w-5 h-5" />}
-        >
-          Sign up with Google
-        </SocialButton>
-
-        <AuthDivider />
-        */}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -102,14 +94,32 @@ export function SignUpForm() {
 
             <FormField
               control={form.control}
-              name="fullName"
+              name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>First Name</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="John Doe" 
-                      autoComplete="name"
+                      placeholder="John" 
+                      autoComplete="given-name"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Doe" 
+                      autoComplete="family-name"
                       {...field} 
                     />
                   </FormControl>
