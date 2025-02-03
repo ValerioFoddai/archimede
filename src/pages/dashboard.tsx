@@ -8,8 +8,8 @@ export function DashboardPage() {
   useEffect(() => {
     async function getUserProfile() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user?.user_metadata?.full_name) {
-        setUserName(user.user_metadata.full_name);
+      if (user?.user_metadata?.first_name) {
+        setUserName(user.user_metadata.first_name);
       }
     }
     getUserProfile();
